@@ -55,9 +55,3 @@ def load() -> pd.DataFrame:
             df = df.groupby(keys, as_index=False)[list(cols)].sum(min_count=1).rename(columns=cols)
         merged = df if merged is None else merged.merge(df, on=keys, how="left")
     return merged.rename(columns={"Comp": "comp", "Season_End_Year": "season_end"})
-
-
-def season_coverage(df: pd.DataFrame) -> pd.DataFrame:
-    """Share of rows with each stat present, by season (used to drop partial seasons)."""
-    stat_cols = [c for c in df.columns if c.endswith("_total")]
-    return df.groupby("season_end")[stat_cols].agg(lambda s: s.notna().mean())

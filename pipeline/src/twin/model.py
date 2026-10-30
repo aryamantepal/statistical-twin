@@ -37,8 +37,9 @@ def neighbours(
     every list, and the reel's isolation count excludes them too.
     """
     n = len(z)
-    k = min(k, n - 1)
     player = np.asarray(player)
+    # Cap k so every row has k other-player seasons; otherwise excluded (inf) rows leak in.
+    k = min(k, n - np.unique(player, return_counts=True)[1].max())
     idx = np.empty((n, k), dtype=np.int64)
     dist = np.empty((n, k))
     iso = np.empty(n, dtype=np.int64)

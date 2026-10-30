@@ -50,3 +50,11 @@ def test_map_axes_finisher_creator_and_stars():
     x, y = map_axes(z, pct, axis_sign=[-1, 1, 0])  # metric 0 = finishing, 1 = creating
     assert x.tolist() == [-4.0, 4.0]  # finisher left, creator right
     assert y.tolist() == [50.0, 50.0]
+
+
+def test_neighbours_cap_k_so_own_seasons_never_leak_in():
+    z = np.array([[0.0], [0.1], [0.2], [5.0]])
+    player = np.array(["a", "a", "a", "b"])
+    nb = neighbours(z, player, k=3, radius=1.0)
+    assert nb.index.shape[1] == 1
+    assert np.isfinite(nb.distance).all()

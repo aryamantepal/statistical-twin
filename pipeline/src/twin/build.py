@@ -6,7 +6,6 @@ from twin.config import LEAGUES, MIN_MINUTES, Model
 from twin.match import link
 from twin.sources import fbref, statsbomb, understat
 
-FBREF_ONLY = {"sot"}
 EXTRA = {"dribbles", "dribble_pct", "final_third", "fouls_won"}
 EXTRA_COLS = ["dribbles_att_total", "dribbles_total", "final_third_total", "fouls_won_total"]
 COMP_TO_LEAGUE = {comp: key for key, (_, comp, _) in LEAGUES.items()}
