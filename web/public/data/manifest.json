@@ -1,0 +1,17 @@
+[
+ {
+  "key": "core",
+  "label": "13 metrics",
+  "description": "The reel's 13 metrics. 2015/16 and 2017/18\u20132023/24 (2016/17 has no open dribble / final-third data)."
+ },
+ {
+  "key": "understat",
+  "label": "Understat only",
+  "description": "The 9 Understat metrics, every season Understat covers (2014/15 onward)."
+ },
+ {
+  "key": "extended",
+  "label": "Since 2009",
+  "description": "The only per-90 stats FBref carries back to 2009/10: non-penalty goals, shots on target and assists. Coarse by necessity."
+ }
+]
