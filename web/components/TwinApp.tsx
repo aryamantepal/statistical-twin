@@ -15,6 +15,7 @@ import {
   rankFrom,
   shortSeason,
 } from "@/lib/data";
+import Link from "next/link";
 import DotPlot from "./DotPlot";
 import MapView from "./MapView";
 import SchemePicker from "./SchemePicker";
@@ -101,9 +102,14 @@ export default function TwinApp() {
     <>
       <main className="wrap">
         <nav className="top">
-          <a className="wordmark" href="./">
-            statistical twin
-          </a>
+          <span className="nav-left">
+            <a className="wordmark" href="./">
+              statistical twin
+            </a>
+            <Link className="nav-link" href="/blog">
+              Write-up
+            </Link>
+          </span>
           {manifest.length > 0 && (
             <div className="tabs" role="group" aria-label="Model">
               {manifest.map((m) => (
@@ -218,7 +224,9 @@ export default function TwinApp() {
             </div>
           </div>
           <div className="legal">
-            <span>Inspired by Kickonomics. Data © its owners.</span>
+            <span>
+              Inspired by Kickonomics. Data © its owners. <Link href="/blog">Read the write-up</Link>.
+            </span>
             <a href="https://github.com/aryamantepal/statistical-twin">Source on GitHub</a>
           </div>
         </div>
