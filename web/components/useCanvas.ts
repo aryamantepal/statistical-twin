@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 
 /** A canvas sized to its container width (at device pixel ratio), redrawn when `draw` changes. */
-export function useCanvas(height: (width: number) => number, draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void) {
+export function useCanvas(
+  height: (width: number) => number,
+  draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void,
+) {
   const ref = useRef<HTMLCanvasElement>(null);
   const [width, setWidth] = useState(0);
 
@@ -37,15 +40,21 @@ export function cssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-/** Re-render when the OS colour scheme flips, so canvas colours follow the CSS tokens. */
-export function useColorScheme(): string {
-  const [scheme, setScheme] = useState("light");
+/** Changes whenever the colour scheme does (OS setting or the picker), so canvases repaint. */
+export function useSchemeKey(): string {
+  const [key, setKey] = useState("");
   useEffect(() => {
+    const root = document.documentElement;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const update = () => setScheme(mq.matches ? "dark" : "light");
+    const update = () => setKey(`${root.dataset.scheme ?? ""}:${mq.matches}`);
     update();
     mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
+    const mo = new MutationObserver(update);
+    mo.observe(root, { attributes: true, attributeFilter: ["data-scheme"] });
+    return () => {
+      mq.removeEventListener("change", update);
+      mo.disconnect();
+    };
   }, []);
-  return scheme;
+  return key;
 }

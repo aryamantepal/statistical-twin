@@ -54,11 +54,14 @@ def main() -> None:
 
         for key in args.models:
             write(MODELS[key])
-        manifest = [
-            {"key": m.key, "label": m.label, "description": m.description}
-            for m in MODELS.values()
-            if (OUT_DIR / f"{m.key}.json").exists()
-        ]
+        manifest = []
+        for m in MODELS.values():
+            path = OUT_DIR / f"{m.key}.json"
+            if path.exists():
+                seasons = sorted(set(json.loads(path.read_text())["rows"]["season"]))
+                manifest.append(
+                    {"key": m.key, "label": m.label, "description": m.description, "seasons": seasons}
+                )
         (OUT_DIR / "manifest.json").write_text(json.dumps(manifest, indent=1))
     else:
         show(args.model, args.player, args.season, args.k)
