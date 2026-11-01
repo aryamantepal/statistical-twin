@@ -1,6 +1,6 @@
 export type Metric = { key: string; label: string; source: string };
 
-export type ModelInfo = { key: string; label: string; description: string };
+export type ModelInfo = { key: string; label: string; description: string; seasons?: string[] };
 
 type RawDoc = {
   model: ModelInfo;
@@ -193,6 +193,17 @@ export function formatValue(metric: string, v: number): string {
   if (metric === "dribble_pct") return `${v.toFixed(0)}%`;
   if (metric === "xg_per_shot") return v.toFixed(2);
   return `${v.toFixed(2)} /90`;
+}
+
+/** Rank of row j among row i's neighbours (1 = nearest), ignoring i's own other seasons. */
+export function rankFrom(d: Dataset, i: number, dist: Float32Array, j: number): number {
+  let rank = 1;
+  for (let k = 0; k < d.n; k++) if (d.id[k] !== d.id[i] && dist[k] < dist[j]) rank++;
+  return rank;
+}
+
+export function shortSeason(season: string): string {
+  return season.slice(2); // "2023/24" -> "23/24"
 }
 
 export function label(d: Dataset, i: number): string {

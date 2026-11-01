@@ -3,7 +3,16 @@
 import { useMemo, useState } from "react";
 import { type Dataset, search } from "@/lib/data";
 
-export default function Search({ data, onPick }: { data: Dataset; onPick: (i: number) => void }) {
+type Props = {
+  data: Dataset;
+  onPick: (i: number) => void;
+  placeholder?: string;
+  label?: string;
+  compact?: boolean;
+  id?: string;
+};
+
+export default function Search({ data, onPick, placeholder, label, compact, id = "search" }: Props) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const [open, setOpen] = useState(false);
@@ -16,14 +25,14 @@ export default function Search({ data, onPick }: { data: Dataset; onPick: (i: nu
   };
 
   return (
-    <div className="search">
+    <div className={compact ? "search compact" : "search"}>
       <input
         type="search"
         role="combobox"
         aria-expanded={open && hits.length > 0}
-        aria-controls="search-results"
-        aria-label="Search player-seasons"
-        placeholder={`Search ${data.n.toLocaleString()} player-seasons — e.g. "Messi 2015", "Saka"`}
+        aria-controls={`${id}-results`}
+        aria-label={label ?? "Search player-seasons"}
+        placeholder={placeholder ?? `Search ${data.n.toLocaleString()} player-seasons, e.g. "Messi 2015" or "Saka"`}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
@@ -42,7 +51,7 @@ export default function Search({ data, onPick }: { data: Dataset; onPick: (i: nu
         }}
       />
       {open && hits.length > 0 && (
-        <ul id="search-results" role="listbox">
+        <ul id={`${id}-results`} role="listbox">
           {hits.map((i, k) => (
             <li
               key={i}
