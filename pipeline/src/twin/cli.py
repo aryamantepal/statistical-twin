@@ -60,7 +60,12 @@ def main() -> None:
             if path.exists():
                 seasons = sorted(set(json.loads(path.read_text())["rows"]["season"]))
                 manifest.append(
-                    {"key": m.key, "label": m.label, "description": m.description, "seasons": seasons}
+                    {
+                        "key": m.key,
+                        "label": m.label,
+                        "description": m.description,
+                        "seasons": seasons,
+                    }
                 )
         (OUT_DIR / "manifest.json").write_text(json.dumps(manifest, indent=1))
     else:
