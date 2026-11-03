@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type Dataset,
   type ModelInfo,
+  basePath,
   distancesFrom,
   findByName,
   findSeason,
@@ -15,6 +17,7 @@ import {
   rankFrom,
   shortSeason,
 } from "@/lib/data";
+import { slugsFor } from "@/lib/slug";
 import DotPlot from "./DotPlot";
 import MapView from "./MapView";
 import SchemePicker from "./SchemePicker";
@@ -41,7 +44,13 @@ function range(seasons: string[] | undefined): string {
   return `${shortSeason(seasons[0])}–${shortSeason(seasons[seasons.length - 1])}`;
 }
 
-export default function TwinApp() {
+/** The selection a prerendered /twin/<slug> page starts on, resolved at build time. */
+export type Initial = { model: string; id: string; player: string; season: string };
+
+export default function TwinApp({ initial }: { initial?: Initial }) {
+  const router = useRouter();
+  // URL is only rewritten after the user acts, so a fresh page load keeps the address it arrived at.
+  const acted = useRef(false);
   const [manifest, setManifest] = useState<ModelInfo[]>([]);
   const [modelKey, setModelKey] = useState<string | null>(null);
   const [data, setData] = useState<Dataset | null>(null);
@@ -52,10 +61,16 @@ export default function TwinApp() {
   const [error, setError] = useState<string | null>(null);
 
   // Load a model, then select the carried player-season (matched by name when ids differ).
-  const open = useCallback((key: string, carry: Carry) => {
+  const open = useCallback((key: string, carry: Carry, legacyLink = false) => {
     loadModel(key).then(
       (d) => {
         const { sel, found } = initialSelection(d, carry);
+        if (legacyLink && found && key === "core") {
+          // Old ?id=&p=&s= link: static export has no redirects, so move to the prerendered path.
+          const scheme = new URLSearchParams(window.location.search).get("scheme");
+          router.replace(`/twin/${slugsFor(d)[sel.subject]}${scheme ? `?scheme=${encodeURIComponent(scheme)}` : ""}`);
+          return;
+        }
         setModelKey(key);
         setData(d);
         setSel(sel);
@@ -63,24 +78,36 @@ export default function TwinApp() {
       },
       (e) => setError(String(e)),
     );
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     loadManifest().then(setManifest, (e) => setError(String(e)));
+    if (initial) {
+      open(initial.model, { id: initial.id, player: initial.player, season: initial.season });
+      return;
+    }
     const q = new URLSearchParams(window.location.search);
-    open(q.get("m") ?? DEFAULT.model, { id: q.get("id"), player: q.get("p"), season: q.get("s") });
-  }, [open]);
+    const carry = { id: q.get("id"), player: q.get("p"), season: q.get("s") };
+    open(q.get("m") ?? DEFAULT.model, carry, Boolean(carry.id || carry.player));
+  }, [open, initial]);
 
   useEffect(() => {
-    if (!data || !sel || !modelKey) return;
+    if (!data || !sel || !modelKey || !acted.current) return;
     const i = sel.subject;
-    const q = new URLSearchParams({ m: modelKey, id: data.id[i], p: data.player[i], s: data.season[i] });
     const scheme = new URLSearchParams(window.location.search).get("scheme");
+    if (modelKey === "core") {
+      // Core results have a prerendered, shareable path.
+      const q = scheme ? `?scheme=${encodeURIComponent(scheme)}` : "";
+      window.history.replaceState(null, "", `${basePath}/twin/${slugsFor(data)[i]}${q}`);
+      return;
+    }
+    const q = new URLSearchParams({ m: modelKey, id: data.id[i], p: data.player[i], s: data.season[i] });
     if (scheme) q.set("scheme", scheme);
-    window.history.replaceState(null, "", `?${q}`);
+    window.history.replaceState(null, "", `${basePath}/?${q}`);
   }, [data, sel, modelKey]);
 
   const switchModel = (key: string, carry?: Carry) => {
+    acted.current = true;
     if (carry) return open(key, carry);
     if (!data || !sel) return open(key, { id: null, player: null, season: null });
     const i = sel.subject;
@@ -89,6 +116,7 @@ export default function TwinApp() {
 
   const pickSubject = (i: number) => {
     if (!data) return;
+    acted.current = true;
     setSel({ subject: i, twin: data.nn[i * data.k] });
     setMissing(null);
     setShowAll(false);
@@ -101,7 +129,7 @@ export default function TwinApp() {
     <>
       <main className="wrap">
         <nav className="top">
-          <a className="wordmark" href="./">
+          <a className="wordmark" href={`${basePath}/`}>
             statistical twin
           </a>
           {manifest.length > 0 && (
