@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import { Fraunces, Instrument_Sans } from "next/font/google";
+import { metadataBase } from "@/lib/site";
 import "./globals.css";
 
 const display = Fraunces({ subsets: ["latin"], axes: ["opsz", "SOFT"], variable: "--font-display" });
 const text = Instrument_Sans({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-text" });
 
 export const metadata: Metadata = {
+  metadataBase,
   title: "Statistical Twin",
   description:
     "Find the most statistically similar big-five-league player-seasons with a nearest-neighbour model.",
+  openGraph: { type: "website", siteName: "Statistical Twin" },
+  twitter: { card: "summary_large_image" },
 };
 
 // Apply the saved colour scheme before first paint so the page never flashes the default.

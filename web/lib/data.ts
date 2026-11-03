@@ -2,7 +2,7 @@ export type Metric = { key: string; label: string; source: string };
 
 export type ModelInfo = { key: string; label: string; description: string; seasons?: string[] };
 
-type RawDoc = {
+export type RawDoc = {
   model: ModelInfo;
   metrics: Metric[];
   leagues: Record<string, string>;
@@ -90,7 +90,7 @@ export function fold(s: string): string {
     .toLowerCase();
 }
 
-function decode(doc: RawDoc): Dataset {
+export function decode(doc: RawDoc): Dataset {
   const r = doc.rows;
   const n = r.id.length;
   const m = doc.metrics.length;
