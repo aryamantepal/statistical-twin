@@ -247,7 +247,10 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
           </div>
           <div className="legal">
             <span>Inspired by Kickonomics. Data © its owners.</span>
-            <a href="https://github.com/aryamantepal/statistical-twin">Source on GitHub</a>
+            <span className="legal-links">
+              <a href="https://aryamantepal.com/projects/statistical-twin">Read the writeup</a>
+              <a href="https://github.com/aryamantepal/statistical-twin">Source on GitHub</a>
+            </span>
           </div>
         </div>
       </footer>

@@ -9,7 +9,7 @@ export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 export function siteOrigin(): string {
   if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
   if (process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "https://statistical-twin.vercel.app";
+  return "https://statistical-twin.aryamantepal.com";
 }
 
 /** metadataBase: Next resolves relative metadata URLs against this. It must include the base path. */

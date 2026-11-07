@@ -240,6 +240,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 .band summary { cursor: pointer; }
 .band pre { white-space: pre-wrap; font-size: 12px; color: var(--on-band-3); margin-top: 8px; font-family: ui-monospace, monospace; }
 .band .legal { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--on-band-rule); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--on-band-3); }
+.band .legal-links { display: flex; gap: 16px; flex-wrap: wrap; }
 
 .schemes { display: grid; gap: 6px; }
 .schemes button {
