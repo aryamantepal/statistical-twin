@@ -89,7 +89,7 @@ Kickonomics.
 |---|---|---|
 | Universe (core) | 11,313 | 8,903 (no 2016/17, no Bundesliga 15/16) |
 | Universe (since 2009) | 17,202 | 17,193 |
-| Yamal 23/24 #1 | Messi 15/16 (3.06) | Kingsley Coman 19/20 (0.91). Messi 15/16 ranks 3,199th. |
+| Yamal 23/24 #1 | Messi 15/16 (3.06) | Kingsley Coman 19/20 (0.91). Messi 15/16 ranks 3,207th. |
 | Messi 15/16 #1 | Mbappé 21/22 | Thauvin 17/18. Neymar 17/18 is #2, Iličić 18/19 #3, Mbappé 21/22 #7. |
 | Median isolation | 3,596 / 11,313 (32%) | 2,391 / 8,903 (27%) |
 | Yamal's typical distance | ≈12.3 | 5.1 |

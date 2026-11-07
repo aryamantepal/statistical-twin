@@ -30,7 +30,7 @@ Commit messages, PRs and issues describe the change itself, not what inspired th
   If a deploy fails with `NEXT_NO_VERSION` ("No Next.js version detected"), that setting has been
   lost. Check it with `vercel api /v9/projects/statistical-twin` and restore it with
   `vercel api /v9/projects/statistical-twin -X PATCH -F rootDirectory=web`.
-- PRs get a preview deploy; `main` deploys to https://statistical-twin.vercel.app.
+- PRs get a preview deploy; `main` deploys to https://statistical-twin.aryamantepal.com (https://statistical-twin.vercel.app still works).
 - The site is a static export (`output: "export"`). The data lives in the committed
   `web/public/data/*.json`, so Vercel never runs the pipeline. To refresh the data, run
   `uv run twin build` in `pipeline/` and commit the JSON.
