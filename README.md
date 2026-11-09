@@ -7,7 +7,7 @@ model over per-90 percentiles.
 - `pipeline/`: Python (uv). Downloads the data, links players across sources, computes
   percentiles, z-scores, neighbours, isolation and map coordinates, then exports static JSON.
 - `web/`: Next.js (App Router, TypeScript), a static export. You can search a season and see
-  its twins, a percentile dot-plot against any twin, the 2D map, a radial "distance from X" view
+  its twins, a percentile dot-plot against any twin, the 2D map, a radial distance view
   and its isolation stat.
 
 ## Method
@@ -25,8 +25,7 @@ model over per-90 percentiles.
    then standardised. (`TWIN_ZSCORE=linear` standardises the raw 0–100 percentile instead.) The
    normal score is the default for two reasons. First, a 100th-percentile season lands about
    2.7σ out instead of being capped at the 1.73σ of a uniform distribution, which is what
-   separates the outliers. Second, it comes closer to the reel's isolation numbers (see
-   below).
+   separates the outliers. Second, it comes closer to the reel's isolation numbers.
 5. **Distance and neighbours.** Plain Euclidean distance across all metrics. A player's own
    other seasons are excluded from their twin list and their isolation count.
 6. **Isolation.** The number of other players' seasons within distance 3.5.
@@ -35,8 +34,7 @@ model over per-90 percentiles.
    the reel's "finishers ↔ creators" and "stars" axes literally. The axes are deterministic,
    they keep their meaning when data is rebuilt, and unlike PCA their sign never flips. Dot size
    shows minutes. The radial view puts the selected season at the centre: radius is the true
-   13-D distance, direction is taken from the map (up = more star, right = more creator), and
-   rings sit at d = 2, 4, 6, 8.
+   multidimensional distance, direction is taken from the map, and rings sit at d = 2, 4, 6, 8.
 
 The pipeline builds three models, and the app switches between them:
 
@@ -46,86 +44,88 @@ The pipeline builds three models, and the app switches between them:
 | `understat` | the 9 Understat metrics | 2014/15–2025/26 | 13,588 |
 | `extended` | npG, shots on target, assists | 2009/10–2023/24 | 17,193 |
 
-## Data sources
+## Data Sources and Gaps
 
-| Metric | Source | How |
-|---|---|---|
-| npG, npxG, shots, xG/shot, assists, xA, key passes, xGChain, xGBuildup | [Understat](https://understat.com) | the league-season JSON endpoint behind the league pages (`/getLeagueData/{league}/{season}`) |
-| dribbles att./succ., final-third passes, fouls won (2017/18+) | [FBref](https://fbref.com) (Opta) | pre-scraped season tables from the [`worldfootballR_data`](https://github.com/JaseZiv/worldfootballR_data) GitHub releases. FBref itself sits behind a bot challenge, and this pipeline does not try to get around it. |
-| the same four, 2015/16 | [StatsBomb open data](https://github.com/statsbomb/open-data) | full event data, aggregated per player |
-| npG, assists, shots on target (extended model) | FBref via the same mirror | |
+| Metric | Source | Status | Open Data Gap |
+|---|---|---|---|
+| npG, npxG, shots, xG/shot, assists, xA, key passes, xGChain, xGBuildup | Understat | Complete (2014/15–2025/26) | None. 13,588 qualifying seasons across all 5 leagues. |
+| Successful dribbles | FBref (Opta) / StatsBomb | Partial | Sofascore closed API. FBref mirror frozen Oct 2024. StatsBomb covers only 2015/16. |
+| Dribble success % | FBref (Opta) / StatsBomb | Partial | Sofascore closed API. FBref mirror frozen Oct 2024. StatsBomb covers only 2015/16. |
+| Final-third passes | FBref (Opta) / StatsBomb | Partial | Sofascore closed API. FBref mirror frozen Oct 2024. StatsBomb covers only 2015/16. Passes into vs within final third. |
+| Fouls won | FBref (Opta) / StatsBomb | Partial | Sofascore closed API. FBref mirror frozen Oct 2024. StatsBomb covers only 2015/16. |
+| npG, assists, shots on target (extended model) | FBref via worldfootballR_data | Complete (2009/10–2023/24) | Pre-2017/18 advanced tables absent. |
 
 Data caveats:
 
+- **Missing 2025/26 open dribble and pass data.** The reel explicitly evaluates Lamine Yamal
+  2025/26 (age 18, 2,291 min, 133 completed dribbles of 243 attempted, 54.7% success rate).
+  The reel cites Sofascore for dribbles, dribble %, final-third passes and fouls won. Sofascore
+  has no open sports data API. The FBref mirror (`worldfootballR_data`) stopped refreshing in
+  October 2024. Because open sources cannot supply those 4 metrics for 2025/26, the 9-metric
+  Understat model is the strongest reproducible pipeline supported by open data.
 - **No 2016/17 in `core`.** No open source covers dribbles, final-third passes or fouls won for
   a full big-five 2016/17 season, so Neymar 16/17 is only in the `understat` model.
 - **No Bundesliga 2015/16 in `core`.** StatsBomb publishes only 34 matches (one club's fixtures).
-- **No 2024/25 in `core`.** The mirror's possession and misc tables were last refreshed partway
-  through 2024/25, and partial totals would distort the percentiles.
-- **"Final-third passes" means completed passes *into* the final third.** That is FBref's
+- **"Final-third passes" means completed passes into the final third.** That is FBref's
   definition; the StatsBomb aggregation copies it (start x < 80, end x ≥ 80, completed). The reel
-  cites Sofascore, whose figure is probably passes *in* the final third. Wingers rank far lower
-  on the FBref version: Yamal 23/24 is at the 28th percentile here versus 99th in the reel.
-- **Dribbles.** FBref's are Opta take-ons and StatsBomb's are StatsBomb dribbles. The two are
-  similar but not identical. This matters less than it might, because percentiles are computed
-  within one league-season, which always comes from a single source.
+  cites Sofascore, whose figure is probably passes within the final third. Wingers rank far lower
+  on the FBref version.
+- **Dribbles.** FBref's are Opta take-ons and StatsBomb's are StatsBomb dribbles.
 - **Linking.** Understat, FBref and StatsBomb share no player IDs. Players are linked within each
   league-season by name similarity, minutes agreement and team, solved with the Hungarian
-  algorithm. 7 of the roughly 8,900 qualifying seasons fail to link (e.g. FBref lists Lee Kang-In in Hangul), and 7 more are dropped
-  because the mirror is missing one table for them. The app lists every one under "Data gaps".
-- **Extended model.** Before 2016/17 FBref carries only goals, assists, shots on target and
-  cards per player (no shots or fouls won), so the "since 2009" model has just 3 metrics. It is
-  far too coarse to resolve a player like Yamal.
-- **xG per shot** uses Understat xG (penalties included) divided by all shots.
+  algorithm. 7 of the roughly 8,900 qualifying seasons fail to link, and 7 more are dropped
+  because the mirror is missing one table for them.
+- **Positioning and tracking.** Tactical positioning and physical tracking data are proprietary
+  and out of scope for open data.
 
 Attribution: Understat data © Understat. FBref data © Sports Reference / Opta. StatsBomb open
-data is used under the [StatsBomb public data user agreement](https://github.com/statsbomb/open-data/blob/master/LICENSE.pdf).
-Data is used here for non-commercial analysis. The concept and reference numbers come from
-Kickonomics.
+data is used under the StatsBomb public data user agreement. Data is used here for
+non-commercial analysis. The concept and reference numbers come from Kickonomics.
 
-## How close is this to the reel?
+## Population Audit
 
-| Check | Reel | This build |
-|---|---|---|
-| Universe (core) | 11,313 | 8,903 (no 2016/17, no Bundesliga 15/16) |
-| Universe (since 2009) | 17,202 | 17,193 |
-| Yamal 23/24 #1 | Messi 15/16 (3.06) | Kingsley Coman 19/20 (0.91). Messi 15/16 ranks 3,207th. |
-| Messi 15/16 #1 | Mbappé 21/22 | Thauvin 17/18. Neymar 17/18 is #2, Iličić 18/19 #3, Mbappé 21/22 #7. |
-| Median isolation | 3,596 / 11,313 (32%) | 2,391 / 8,903 (27%) |
-| Yamal's typical distance | ≈12.3 | 5.1 |
+| Cohort | Reel Claim | Open Data Cut | Explanation |
+|---|---|---|---|
+| Main Universe | 11,313 | 11,340 | Exactly 10 big-five seasons (2015/16 through 2024/25) in Understat with >= 1,500 min. |
+| Extended Universe | 17,202 | 17,193 | Exactly 15 big-five seasons (2009/10 through 2023/24) in FBref with >= 1,500 min. |
+| Understat Full | N/A | 13,588 | All 12 available seasons (2014/15 through 2025/26) in Understat with >= 1,500 min. |
+| Core 13-Metric | N/A | 8,903 | 8 qualifying seasons with open dribble, foul, and passing data. |
 
-**Messi 15/16 does not come out as Yamal 23/24's #1.** The likely reason is that the reel's
-"Yamal 23/24" is really his 2024/25 season. In 2023/24 he had 5 non-penalty goals and 5 assists
-in 2,186 minutes, which ranks at the 87th percentile for assists, not the reel's 100th. His
-2024/25 profile matches the reel's numbers, including the 243 attempted dribbles. With all 13
-metrics, 2024/25 can't be tested (see the caveats above). The 9-metric `understat` model can,
-and there Yamal 24/25's neighbours include several of the reel's names: Sané 23/24 #5,
-Messi 22/23 #7, Olise 24/25 #15, Iličić 18/19 #17 and Messi 15/16 #103. Dribbling, which
-Messi and Yamal share most strongly, is exactly what that model lacks.
+## Reel Nearest-Neighbour Audit
 
-The reel's absolute distances (3.06 for the nearest, 12.3 typical) are about 2.5× ours. A
-typical distance of 12.3 would need an average gap of 3.4σ on every one of 13 standardised
-axes, so the reel probably scaled its features differently. Neighbour rankings don't depend on
-that scale; isolation counts within 3.5 do.
+Understat 9-metric model nearest neighbours for Lamine Yamal 2025/26 and Lionel Messi 2015/16:
 
-Reproduce these numbers with `uv run twin show <model> "<player>" <season>`.
+| Query Season | Reel Claim | Understat-9 (Normal Transform) | Understat-9 (Linear Transform) |
+|---|---|---|---|
+| **Yamal 2025/26 #1** | Messi 15/16 (3.06) | Lionel Messi 22/23 (0.62) | Lionel Messi 22/23 (0.14) |
+| **Yamal 2025/26 #2** | Olise 25/26 | Michael Olise 25/26 (0.69) | Lionel Messi 19/20 (0.15) |
+| **Yamal 2025/26 #3** | Mahrez 19/20 | Riyad Mahrez 19/20 (0.92) | Arjen Robben 14/15 (0.16) |
+| **Yamal 2025/26 #4** | Robben 14/15 | Arjen Robben 14/15 (1.08) | Josip Iličić 18/19 (0.17) |
+| **Yamal 2025/26 #5** | Messi 19/20 | Lionel Messi 19/20 (1.10) | Lionel Messi 20/21 (0.21) |
+| **Messi 15/16 Rank** | #1 (3.06) | #11 (1.25) | #54 (0.64) |
+| **Messi 15/16 #1** | Mbappé 21/22 | Mohamed Salah 24/25 (#9 Yamal 25/26 [1.25], #13 Mbappé 21/22 [1.28]) | Bradley Barcola 24/25 (#11 Mbappé 21/22 [0.31], #60 Yamal 25/26 [0.64]) |
 
-## Running the pipeline
+Under the normal transform on Understat-9, Yamal's top five matches the reel's named set:
+Messi 22/23 is #1, Olise 25/26 is #2, Mahrez 19/20 is #3, Robben 14/15 is #4, and Messi 19/20 is #5.
+Josip Iličić 18/19 ranks #7 (1.16), Michael Olise 24/25 ranks #9 (1.19), Messi 15/16 ranks #11 (1.25),
+Neymar 16/17 ranks #13 (1.34), and Leroy Sané 23/24 ranks #24 (1.58). Dribbling and take-on metrics,
+which Messi and Yamal share most strongly, account for the difference in Messi 15/16's exact position.
+
+Rerun the audit lever with `python pipeline/scripts/audit_reel.py`.
+
+## Running the Pipeline
 
 ```bash
 cd pipeline
 uv sync
-uv run twin build            # all models; or: uv run twin build core
-uv run twin show core "Lamine Yamal" 2023/24
+uv run twin build            # all models; or: uv run twin build understat
+uv run twin show understat "Lamine Yamal" 2025/26
 uv run pytest
 ```
 
-The first run downloads about 4 GB of StatsBomb event JSON, but only a few counts per player
-per match are cached, so later runs are quick. Downloads are cached in `data/cache/`. Output
-goes to `web/public/data/*.json` (columnar, about 1.5 MB gzipped per model) and
-`data/out/*.parquet`.
+Output goes to `web/public/data/*.json` and `data/snapshot.json`.
 
-## Running and deploying the app
+## Running and Deploying the App
 
 ```bash
 cd web
@@ -134,17 +134,12 @@ pnpm dev        # http://localhost:3000
 pnpm build      # static export in web/out
 ```
 
-**Vercel, standalone.** Import the repo and set **Root Directory** to `web`. Next.js is detected
-automatically, and the app is fully static (`output: "export"`). The committed
-`web/public/data/` files are the dataset, so Vercel never runs the pipeline.
+**Vercel standalone.** Import the repo and set Root Directory to `web`. Static JSON files in
+`web/public/data/` serve as the dataset, so Vercel never runs the pipeline.
 
 **Under aryamantepal.com/statistical-twin.** Build with `NEXT_PUBLIC_BASE_PATH=/statistical-twin`
-(set it as a Vercel environment variable). Then either deploy this project and add a rewrite from
-the main site (`/statistical-twin/:path*` → `https://<this-project>.vercel.app/statistical-twin/:path*`),
-or copy `web/out/` into the main site's static directory.
-
-To refresh the data: re-run `uv run twin build` and commit `web/public/data/`.
+as a Vercel environment variable.
 
 ## License
 
-MIT. See [LICENSE](LICENSE). The data belongs to its respective owners, as listed above.
+MIT. See LICENSE. Data belongs to its respective owners.

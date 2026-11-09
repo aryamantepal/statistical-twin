@@ -51,6 +51,7 @@ def main() -> None:
 
     if args.cmd == "build":
         from twin.export import write
+        from twin.snapshot import export_snapshot
 
         for key in args.models:
             write(MODELS[key])
@@ -68,6 +69,7 @@ def main() -> None:
                     }
                 )
         (OUT_DIR / "manifest.json").write_text(json.dumps(manifest, indent=1))
+        export_snapshot()
     else:
         show(args.model, args.player, args.season, args.k)
 
