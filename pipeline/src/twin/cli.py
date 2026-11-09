@@ -1,4 +1,5 @@
-"""`twin build [model ...]` runs the pipeline; `twin show <model> <player> <season>` inspects it."""
+"""`twin build [model ...]` runs the pipeline; `twin show <model> <player> <season>` inspects it;
+`twin sync push|pull` backs up / restores the Sofascore cache via Neon."""
 
 import argparse
 import json
@@ -47,7 +48,15 @@ def main() -> None:
     s.add_argument("player")
     s.add_argument("season")
     s.add_argument("-k", type=int, default=10)
+    y = sub.add_parser("sync", help="back up / restore the Sofascore cache via Neon")
+    y.add_argument("direction", choices=["push", "pull"])
     args = parser.parse_args()
+
+    if args.cmd == "sync":
+        from twin import db
+
+        db.push() if args.direction == "push" else db.pull()
+        return
 
     if args.cmd == "build":
         from twin.export import write

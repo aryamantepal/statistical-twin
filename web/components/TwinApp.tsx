@@ -23,7 +23,7 @@ import MapView from "./MapView";
 import SchemePicker from "./SchemePicker";
 import Search from "./Search";
 
-const DEFAULT = { model: "core", player: "Lamine Yamal", season: "2023/24" };
+const DEFAULT = { model: "core", player: "Lamine Yamal", season: "2025/26" };
 
 type Selection = { subject: number; twin: number | null };
 type Carry = { id: string | null; player: string | null; season: string | null };
@@ -225,12 +225,13 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
                   xGBuildup.
                 </li>
                 <li>
-                  <a href="https://fbref.com">FBref</a> (Opta), via the{" "}
-                  <a href="https://github.com/JaseZiv/worldfootballR_data">worldfootballR_data</a> mirror: dribbles,
-                  final-third passes, fouls won, shots on target.
+                  <a href="https://www.sofascore.com">Sofascore</a>: dribbles attempted and completed, final-third
+                  passes, fouls won (2015/16 onward).
                 </li>
                 <li>
-                  <a href="https://github.com/statsbomb/open-data">StatsBomb open data</a>: the same four for 2015/16.
+                  <a href="https://fbref.com">FBref</a> (Opta), via the{" "}
+                  <a href="https://github.com/JaseZiv/worldfootballR_data">worldfootballR_data</a> mirror: goals,
+                  assists and shots on target for the “Since 2009” model.
                 </li>
               </ul>
               {data && data.log.length > 0 && (

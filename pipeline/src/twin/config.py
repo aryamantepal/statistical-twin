@@ -52,10 +52,10 @@ METRICS: dict[str, Metric] = {
         Metric("key_passes", "Key passes", "Understat", 1),
         Metric("xgchain", "Chance involvement (xGChain)", "Understat", 0),
         Metric("xgbuildup", "Build-up involvement (xGBuildup)", "Understat", 1),
-        Metric("dribbles", "Successful dribbles", "FBref / StatsBomb", 1),
-        Metric("dribble_pct", "Dribble success %", "FBref / StatsBomb", 0),
-        Metric("final_third", "Final-third passes", "FBref / StatsBomb", 1),
-        Metric("fouls_won", "Fouls won", "FBref / StatsBomb", 0),
+        Metric("dribbles", "Successful dribbles", "Sofascore", 1),
+        Metric("dribble_pct", "Dribble success %", "Sofascore", 0),
+        Metric("final_third", "Final-third passes", "Sofascore", 1),
+        Metric("fouls_won", "Fouls won", "Sofascore", 0),
     ]
 }
 
@@ -99,10 +99,10 @@ MODELS: dict[str, Model] = {
         Model(
             "core",
             "13 metrics",
-            "The reel's 13 metrics. 2015/16 and 2017/18–2023/24 (2016/17 has no open "
-            "dribble / final-third data).",
+            "The reel's 13 metrics, 2015/16 onward (Sofascore has no detailed player stats "
+            "before 2015/16).",
             CORE_METRICS,
-            tuple(range(2015, 2024)),
+            tuple(range(2015, 2026)),
             "understat",
         ),
         Model(

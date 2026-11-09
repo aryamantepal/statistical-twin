@@ -42,7 +42,7 @@ The pipeline builds three models, and the app switches between them:
 
 | Model | Metrics | Seasons | Size |
 |---|---|---|---|
-| `core` | the 13 above | 2015/16, 2017/18–2023/24 (Bundesliga 2015/16 missing) | 8,903 |
+| `core` | the 13 above | 2015/16–2025/26 | 12,426 |
 | `understat` | the 9 Understat metrics | 2014/15–2025/26 | 13,588 |
 | `extended` | npG, shots on target, assists | 2009/10–2023/24 | 17,193 |
 
@@ -51,62 +51,74 @@ The pipeline builds three models, and the app switches between them:
 | Metric | Source | How |
 |---|---|---|
 | npG, npxG, shots, xG/shot, assists, xA, key passes, xGChain, xGBuildup | [Understat](https://understat.com) | the league-season JSON endpoint behind the league pages (`/getLeagueData/{league}/{season}`) |
-| dribbles att./succ., final-third passes, fouls won (2017/18+) | [FBref](https://fbref.com) (Opta) | pre-scraped season tables from the [`worldfootballR_data`](https://github.com/JaseZiv/worldfootballR_data) GitHub releases. FBref itself sits behind a bot challenge, and this pipeline does not try to get around it. |
-| the same four, 2015/16 | [StatsBomb open data](https://github.com/statsbomb/open-data) | full event data, aggregated per player |
-| npG, assists, shots on target (extended model) | FBref via the same mirror | |
+| dribbles att./succ., final-third passes, fouls won | [Sofascore](https://www.sofascore.com) | season totals from the JSON API behind Sofascore's league statistics pages, downloaded once by `pipeline/scripts/fetch_sofascore.py` (see below) |
+| npG, assists, shots on target (extended model) | [FBref](https://fbref.com) (Opta) | pre-scraped season tables from the [`worldfootballR_data`](https://github.com/JaseZiv/worldfootballR_data) GitHub releases |
 
 Data caveats:
 
-- **No 2016/17 in `core`.** No open source covers dribbles, final-third passes or fouls won for
-  a full big-five 2016/17 season, so Neymar 16/17 is only in the `understat` model.
-- **No Bundesliga 2015/16 in `core`.** StatsBomb publishes only 34 matches (one club's fixtures).
-- **No 2024/25 in `core`.** The mirror's possession and misc tables were last refreshed partway
-  through 2024/25, and partial totals would distort the percentiles.
-- **"Final-third passes" means completed passes *into* the final third.** That is FBref's
-  definition; the StatsBomb aggregation copies it (start x < 80, end x ≥ 80, completed). The reel
-  cites Sofascore, whose figure is probably passes *in* the final third. Wingers rank far lower
-  on the FBref version: Yamal 23/24 is at the 28th percentile here versus 99th in the reel.
-- **Dribbles.** FBref's are Opta take-ons and StatsBomb's are StatsBomb dribbles. The two are
-  similar but not identical. This matters less than it might, because percentiles are computed
-  within one league-season, which always comes from a single source.
-- **Linking.** Understat, FBref and StatsBomb share no player IDs. Players are linked within each
+- **Sofascore has no detailed player stats before 2015/16**, so `core` starts there. Understat's
+  2014/15 season is only in the `understat` model.
+- **"Final-third passes" are Sofascore's accurate passes *in* the final third**, not passes
+  *into* it (FBref's definition, which earlier builds used).
+- **Dribbles** are Sofascore's: attempted = `totalContest`, completed = `successfulDribbles`.
+  Yamal 25/26 is 243 attempted / 133 completed.
+- **Linking.** Understat and Sofascore share no player IDs. Players are linked within each
   league-season by name similarity, minutes agreement and team, solved with the Hungarian
-  algorithm. 7 of the roughly 8,900 qualifying seasons fail to link (e.g. FBref lists Lee Kang-In in Hangul), and 7 more are dropped
-  because the mirror is missing one table for them. The app lists every one under "Data gaps".
+  algorithm. 10 of the 12,436 qualifying Understat seasons fail to link, all nickname
+  mismatches (Chicharito, Tana, Alfonso Espino). The app lists every one under "Data gaps".
 - **Extended model.** Before 2016/17 FBref carries only goals, assists, shots on target and
   cards per player (no shots or fouls won), so the "since 2009" model has just 3 metrics. It is
   far too coarse to resolve a player like Yamal.
 - **xG per shot** uses Understat xG (penalties included) divided by all shots.
 
-Attribution: Understat data © Understat. FBref data © Sports Reference / Opta. StatsBomb open
-data is used under the [StatsBomb public data user agreement](https://github.com/statsbomb/open-data/blob/master/LICENSE.pdf).
-Data is used here for non-commercial analysis. The concept and reference numbers come from
-Kickonomics.
+### The Sofascore download
+
+Sofascore has no public API and blocks non-browser clients, so `fetch_sofascore.py` requests its
+internal API with a browser TLS fingerprint (`curl_cffi`). It is run by hand, never in CI: one
+request every 2.5 s, about 185 requests for every league-season, each response cached forever in
+`data/cache/sofascore/` (gitignored), and it stops on the first error instead of retrying.
+
+```bash
+uv run --with curl_cffi python pipeline/scripts/fetch_sofascore.py
+```
+
+The raw cache is backed up to the project's Neon Postgres (`sofascore_files` holds the raw
+responses, `sofascore_season_stats` the parsed totals). Put the connection string in
+`pipeline/.env.local` (`DATABASE_URL`, gitignored), then:
+
+```bash
+uv run twin sync push   # back up data/cache/sofascore/ to Neon
+uv run twin sync pull   # restore it on a new machine instead of re-downloading
+```
+
+Attribution: Understat data © Understat. Dribble, foul and final-third data © Sofascore. FBref
+data © Sports Reference / Opta. Data is used here for non-commercial analysis. The concept and
+reference numbers come from Kickonomics.
 
 ## How close is this to the reel?
 
 | Check | Reel | This build |
 |---|---|---|
-| Universe (core) | 11,313 | 8,903 (no 2016/17, no Bundesliga 15/16) |
+| Universe (core) | 11,313 | 12,426 |
 | Universe (since 2009) | 17,202 | 17,193 |
-| Yamal 23/24 #1 | Messi 15/16 (3.06) | Kingsley Coman 19/20 (0.91). Messi 15/16 ranks 3,207th. |
-| Messi 15/16 #1 | Mbappé 21/22 | Thauvin 17/18. Neymar 17/18 is #2, Iličić 18/19 #3, Mbappé 21/22 #7. |
-| Median isolation | 3,596 / 11,313 (32%) | 2,391 / 8,903 (27%) |
-| Yamal's typical distance | ≈12.3 | 5.1 |
+| Yamal 25/26 dribbles | 243 att. / 133 succ. | 243 / 133 |
+| Yamal 25/26 #1 | Messi 15/16 (≈3.1) | Messi 19/20 (1.30). Messi 15/16 is #5. |
+| Yamal 25/26, rest of reel top 5 | Neymar 16/17, Iličić 18/19, Sané 23/24, Olise 24/25 | Neymar 16/17 #8, Iličić 18/19 #7, Olise 24/25 #6; Sané 23/24 outside the top 10 |
+| Messi 15/16 #1 / #2 | Mbappé 21/22 / Yamal 25/26 | Yamal 25/26 (1.50) / Mbappé 21/22 (1.67) |
+| Median isolation | 3,596 / 11,313 (32%) | 3,494 / 12,426 (28%) |
 
-**Messi 15/16 does not come out as Yamal 23/24's #1.** The likely reason is that the reel's
-"Yamal 23/24" is really his 2024/25 season. In 2023/24 he had 5 non-penalty goals and 5 assists
-in 2,186 minutes, which ranks at the 87th percentile for assists, not the reel's 100th. His
-2024/25 profile matches the reel's numbers, including the 243 attempted dribbles. With all 13
-metrics, 2024/25 can't be tested (see the caveats above). The 9-metric `understat` model can,
-and there Yamal 24/25's neighbours include several of the reel's names: Sané 23/24 #5,
-Messi 22/23 #7, Olise 24/25 #15, Iličić 18/19 #17 and Messi 15/16 #103. Dribbling, which
-Messi and Yamal share most strongly, is exactly what that model lacks.
+**The reel's names come back, in a slightly different order.** Our top 10 for Yamal 25/26
+is four Messi seasons (19/20, 22/23, 17/18, 15/16), Olise twice, Iličić 18/19, Neymar 16/17,
+Mahrez 19/20 and Messi 16/17. The reel seems to show each player once; keeping each player's
+nearest season gives Messi, Olise, Iličić, Neymar, Mahrez, i.e. four of its five names. The
+match also runs the other way: Messi 19/20's nearest twin is Yamal 25/26.
 
-The reel's absolute distances (3.06 for the nearest, 12.3 typical) are about 2.5× ours. A
-typical distance of 12.3 would need an average gap of 3.4σ on every one of 13 standardised
-axes, so the reel probably scaled its features differently. Neighbour rankings don't depend on
-that scale; isolation counts within 3.5 do.
+Earlier builds tested "Yamal 23/24", which the reel never used: its card is his 2025/26 season.
+Yamal 23/24's #1 is Kingsley Coman 19/20.
+
+The reel's absolute distances (≈3.1 for the nearest) are about 2.5× ours, so it probably
+scaled its features differently. Neighbour rankings don't depend on that scale; isolation
+counts within 3.5 do.
 
 Reproduce these numbers with `uv run twin show <model> "<player>" <season>`.
 
@@ -116,12 +128,12 @@ Reproduce these numbers with `uv run twin show <model> "<player>" <season>`.
 cd pipeline
 uv sync
 uv run twin build            # all models; or: uv run twin build core
-uv run twin show core "Lamine Yamal" 2023/24
+uv run twin show core "Lamine Yamal" 2025/26
 uv run pytest
 ```
 
-The first run downloads about 4 GB of StatsBomb event JSON, but only a few counts per player
-per match are cached, so later runs are quick. Downloads are cached in `data/cache/`. Output
+`core` needs the Sofascore cache (see above; `uv run twin sync pull` restores it). Other
+downloads are cached in `data/cache/`. Output
 goes to `web/public/data/*.json` (columnar, about 1.5 MB gzipped per model) and
 `data/out/*.parquet`.
 

@@ -4,7 +4,7 @@ import pandas as pd
 
 from twin.config import LEAGUES, MIN_MINUTES, Model
 from twin.match import link
-from twin.sources import fbref, statsbomb, understat
+from twin.sources import fbref, sofascore, understat
 
 EXTRA = {"dribbles", "dribble_pct", "final_third", "fouls_won"}
 EXTRA_COLS = ["dribbles_att_total", "dribbles_total", "final_third_total", "fouls_won_total"]
@@ -62,10 +62,7 @@ def universe(model: Model, log: list[str]) -> pd.DataFrame:
     if not EXTRA & set(model.metrics):
         return us
 
-    fb = _fbref_frame(fbref.load())
-    fb = fb[fb["season"].isin(_complete_seasons(fb, EXTRA_COLS))]
-    sb = statsbomb.load([s for s in model.seasons if s in statsbomb.SEASON_ID])
-    extra = pd.concat([fb, sb], ignore_index=True)
+    extra = sofascore.load(model.seasons)
     have = set(extra.groupby(["league", "season"]).size().index)
     dropped = sorted({(lg, s) for lg, s in zip(us["league"], us["season"])} - have)
     if dropped:
