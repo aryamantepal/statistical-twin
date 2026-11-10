@@ -61,7 +61,7 @@ def _connect():
 
 def push() -> None:
     files = sorted(sofascore.DIR.glob("*.json"))
-    if not files:
+    if not any(sofascore.DIR.glob("*_p*.json")):
         raise SystemExit(f"nothing to push: {sofascore.DIR} is empty")
     stats = sofascore.load(range(2000, 2100))
     with _connect() as conn, conn.cursor() as cur:

@@ -32,7 +32,7 @@ def load(seasons) -> pd.DataFrame:
                 {
                     "sofascore_id": r["player"]["id"],
                     "player": r["player"]["name"],
-                    "team": r.get("team", {}).get("name", ""),
+                    "team": (r.get("team") or {}).get("name", ""),
                     "minutes": r.get("minutesPlayed") or 0,
                     "league": m["league"],
                     "season": int(m["season"]),
