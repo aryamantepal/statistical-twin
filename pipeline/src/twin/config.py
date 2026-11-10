@@ -15,13 +15,13 @@ TOP_N = 25
 # "linear" = standardise the 0–100 percentile directly. See README for why "normal".
 ZSCORE = os.environ.get("TWIN_ZSCORE", "normal")
 
-# Understat key -> (display name, FBref "Comp", StatsBomb competition id)
+# Understat key -> (display name, FBref "Comp")
 LEAGUES = {
-    "EPL": ("Premier League", "Premier League", 2),
-    "La_liga": ("La Liga", "La Liga", 11),
-    "Bundesliga": ("Bundesliga", "Bundesliga", 9),
-    "Serie_A": ("Serie A", "Serie A", 12),
-    "Ligue_1": ("Ligue 1", "Ligue 1", 7),
+    "EPL": ("Premier League", "Premier League"),
+    "La_liga": ("La Liga", "La Liga"),
+    "Bundesliga": ("Bundesliga", "Bundesliga"),
+    "Serie_A": ("Serie A", "Serie A"),
+    "Ligue_1": ("Ligue 1", "Ligue 1"),
 }
 
 

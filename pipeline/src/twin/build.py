@@ -8,7 +8,7 @@ from twin.sources import fbref, sofascore, understat
 
 EXTRA = {"dribbles", "dribble_pct", "final_third", "fouls_won"}
 EXTRA_COLS = ["dribbles_att_total", "dribbles_total", "final_third_total", "fouls_won_total"]
-COMP_TO_LEAGUE = {comp: key for key, (_, comp, _) in LEAGUES.items()}
+COMP_TO_LEAGUE = {comp: key for key, (_, comp) in LEAGUES.items()}
 COVERAGE = 0.95
 # Columns the CL model adds Champions League totals to.
 UCL_COUNTS = ["npg_total", "shots_total", "assists_total", "key_passes_total", *EXTRA_COLS]
