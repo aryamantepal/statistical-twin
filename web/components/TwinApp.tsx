@@ -124,6 +124,9 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
   const pickTwin = (i: number) => sel && i !== sel.subject && setSel({ ...sel, twin: i });
 
   const elsewhere = missing ? manifest.filter((m) => m.key !== modelKey && m.seasons?.includes(missing.season)) : [];
+  // A model and its League + CL variant share one tab, with a switch between them.
+  const baseKey = manifest.find((m) => m.key === modelKey)?.variantOf ?? modelKey;
+  const clVariant = manifest.find((m) => m.variantOf === baseKey);
 
   return (
     <>
@@ -134,8 +137,10 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
           </a>
           {manifest.length > 0 && (
             <div className="tabs" role="group" aria-label="Model">
-              {manifest.map((m) => (
-                <button key={m.key} aria-pressed={m.key === modelKey} onClick={() => switchModel(m.key)}>
+              {manifest
+                .filter((m) => !m.variantOf)
+                .map((m) => (
+                <button key={m.key} aria-pressed={m.key === baseKey} onClick={() => switchModel(m.key)}>
                   {m.label}
                   <small>{range(m.seasons)}</small>
                 </button>
@@ -154,6 +159,16 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
           {data && (
             <div style={{ marginTop: 24 }}>
               <Search data={data} onPick={pickSubject} id="subject" />
+              {clVariant && baseKey && (
+                <div className="tabs comp" role="group" aria-label="Competitions">
+                  <button aria-pressed={modelKey === baseKey} onClick={() => switchModel(baseKey)}>
+                    League
+                  </button>
+                  <button aria-pressed={modelKey === clVariant.key} onClick={() => switchModel(clVariant.key)}>
+                    League + Champions League
+                  </button>
+                </div>
+              )}
               <p className="model-note">{data.info.description}</p>
             </div>
           )}
@@ -298,6 +313,7 @@ function Body({
           </h2>
           <p>
             {data.team[s]} · {data.leagues[data.league[s]]} · {data.minutes[s].toLocaleString()} minutes
+            {data.clMinutes && data.clMinutes[s] > 0 && ` (${data.clMinutes[s].toLocaleString()} in the Champions League)`}
           </p>
         </div>
         <div className="fact">

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from twin.config import RATE_METRICS
+from twin.config import LEAGUE_ONLY, RATE_METRICS
 
 
 def per90(total, minutes):
@@ -17,16 +17,23 @@ def safe_ratio(num, den):
 
 
 def derive(df: pd.DataFrame, metrics) -> pd.DataFrame:
-    """Turn `<metric>_total` columns (plus minutes) into the model's metric columns."""
+    """Turn `<metric>_total` columns (plus minutes) into the model's metric columns.
+
+    When `league_minutes` / `league_shots_total` are present (CL models), the LEAGUE_ONLY
+    metrics use them, since their totals cover league matches only.
+    """
     out = pd.DataFrame(index=df.index)
     for key in metrics:
+        league_only = key in LEAGUE_ONLY and "league_minutes" in df
         if key == "xg_per_shot":
-            out[key] = safe_ratio(df["xg_total"], df["shots_total"])
+            shots = df["league_shots_total"] if league_only else df["shots_total"]
+            out[key] = safe_ratio(df["xg_total"], shots)
         elif key == "dribble_pct":
             out[key] = 100 * safe_ratio(df["dribbles_total"], df["dribbles_att_total"])
         else:
             assert key not in RATE_METRICS
-            out[key] = per90(df[f"{key}_total"], df["minutes"])
+            minutes = df["league_minutes"] if league_only else df["minutes"]
+            out[key] = per90(df[f"{key}_total"], minutes)
     return out
 
 

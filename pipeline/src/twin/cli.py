@@ -74,6 +74,7 @@ def main() -> None:
                         "label": m.label,
                         "description": m.description,
                         "seasons": seasons,
+                        **({"variantOf": m.variant_of} if m.variant_of else {}),
                     }
                 )
         (OUT_DIR / "manifest.json").write_text(json.dumps(manifest, indent=1))

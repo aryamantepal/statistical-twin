@@ -1,6 +1,6 @@
 """Back up the Sofascore cache to the project's Neon Postgres and restore it.
 
-`twin sync push` uploads every cached response plus a parsed per-player table;
+`twin sync push` uploads every cached response (league and Champions League) plus a parsed per-player table;
 `twin sync pull` writes missing cache files back to disk. The build itself only ever reads
 the local cache, so CI and Vercel never need the database.
 """
@@ -8,6 +8,8 @@ the local cache, so CI and Vercel never need the database.
 import json
 import os
 from pathlib import Path
+
+import pandas as pd
 
 from twin.config import ROOT
 from twin.sources import sofascore
@@ -60,16 +62,19 @@ def _connect():
 
 
 def push() -> None:
-    files = sorted(sofascore.DIR.glob("*.json"))
+    files = sorted(sofascore.DIR.rglob("*.json"))
     if not any(sofascore.DIR.glob("*_p*.json")):
         raise SystemExit(f"nothing to push: {sofascore.DIR} is empty")
-    stats = sofascore.load(range(2000, 2100))
+    seasons = range(2000, 2100)
+    stats = sofascore.load(seasons)
+    if any(sofascore.UCL_DIR.glob("*_p*.json")):
+        stats = pd.concat([stats, sofascore.load(seasons, ucl=True)], ignore_index=True)
     with _connect() as conn, conn.cursor() as cur:
         cur.execute(SCHEMA)
         cur.executemany(
             "insert into sofascore_files (name, body) values (%s, %s) "
             "on conflict (name) do update set body = excluded.body, synced_at = now()",
-            [(f.name, f.read_text()) for f in files],
+            [(f.relative_to(sofascore.DIR).as_posix(), f.read_text()) for f in files],
         )
         cur.execute("truncate sofascore_season_stats")
         cur.executemany(
@@ -101,6 +106,7 @@ def pull() -> None:
         for name, body in cur:
             path = Path(sofascore.DIR) / name
             if not path.exists():
+                path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(json.dumps(body))
                 wrote += 1
     print(f"restored {wrote} files into {sofascore.DIR}")

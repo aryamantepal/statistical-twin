@@ -1,6 +1,13 @@
 export type Metric = { key: string; label: string; source: string };
 
-export type ModelInfo = { key: string; label: string; description: string; seasons?: string[] };
+export type ModelInfo = {
+  key: string;
+  label: string;
+  description: string;
+  seasons?: string[];
+  /** Set on a League + CL variant: the key of the league-only model it toggles with. */
+  variantOf?: string;
+};
 
 export type RawDoc = {
   model: ModelInfo;
@@ -16,6 +23,8 @@ export type RawDoc = {
     league: string[];
     season: string[];
     minutes: number[];
+    /** Champions League minutes included in `minutes` (CL models only). */
+    clMinutes?: number[];
     pct: number[];
     raw: number[];
     z: number[];
@@ -45,6 +54,7 @@ export type Dataset = {
   league: string[];
   season: string[];
   minutes: Int32Array;
+  clMinutes: Int32Array | null;
   pct: Float32Array; // 0–100
   raw: Float32Array; // per-90 or rate
   z: Float32Array;
@@ -112,6 +122,7 @@ export function decode(doc: RawDoc): Dataset {
     league: r.league,
     season: r.season,
     minutes: Int32Array.from(r.minutes),
+    clMinutes: r.clMinutes ? Int32Array.from(r.clMinutes) : null,
     pct: Float32Array.from(r.pct, (v) => v / 10),
     raw: Float32Array.from(r.raw, (v) => v / 1000),
     z: Float32Array.from(r.z, (v) => v / 100),

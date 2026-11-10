@@ -17,10 +17,14 @@ CACHE = ROOT / "data" / "cache" / "sofascore"
 BASE = "https://www.sofascore.com/api/v1"
 DELAY = 2.5
 PAGE = 100
-STOP_BELOW_MINUTES = 1200
+# League pages go down to 500 min so league + Champions League minutes can reach the cutoff.
+STOP_BELOW_MINUTES = 500
 FIELDS = "successfulDribbles,totalContest,wasFouled,accurateFinalThirdPasses,minutesPlayed"
 # Understat league key -> Sofascore unique-tournament id
 TOURNAMENTS = {"EPL": 17, "La_liga": 8, "Bundesliga": 35, "Serie_A": 23, "Ligue_1": 34}
+# Champions League: every player, plus the count stats the CL model adds to Understat's.
+UCL = 7
+UCL_FIELDS = FIELDS + ",goals,penaltyGoals,totalShots,assists,keyPasses"
 SEASONS = range(2014, 2026)
 
 session = requests.Session(impersonate="chrome")
@@ -46,8 +50,8 @@ def get(path: Path, url: str) -> dict:
     return r.json()
 
 
-def season_ids(league: str, tid: int) -> dict[int, int]:
-    data = get(CACHE / f"seasons_{league}.json", f"{BASE}/unique-tournament/{tid}/seasons")
+def season_ids(league: str, tid: int, cache: Path = CACHE) -> dict[int, int]:
+    data = get(cache / f"seasons_{league}.json", f"{BASE}/unique-tournament/{tid}/seasons")
     out = {}
     for s in data["seasons"]:
         a, _, b = s["year"].partition("/")
@@ -56,24 +60,32 @@ def season_ids(league: str, tid: int) -> dict[int, int]:
     return out
 
 
-def fetch(league: str, tid: int, year: int, sid: int) -> str:
+def fetch(
+    league: str,
+    tid: int,
+    year: int,
+    sid: int,
+    cache: Path = CACHE,
+    fields: str = FIELDS,
+    stop_below: int = STOP_BELOW_MINUTES,
+) -> str:
     page = 0
     while True:
         url = (
             f"{BASE}/unique-tournament/{tid}/season/{sid}/statistics?limit={PAGE}"
-            f"&offset={page * PAGE}&order=-minutesPlayed&accumulation=total&fields={FIELDS}"
+            f"&offset={page * PAGE}&order=-minutesPlayed&accumulation=total&fields={fields}"
         )
-        data = get(CACHE / f"{league}_{year}_p{page}.json", url)
+        data = get(cache / f"{league}_{year}_p{page}.json", url)
         rows = data.get("results", [])
         if page == 0 and rows and "totalContest" not in rows[0]:
             sys.exit(f"stopping: totalContest missing from {league} {year} rows")
         page += 1
         if not rows or page >= data.get("pages", 0):
             break
-        if rows[-1].get("minutesPlayed", 0) < STOP_BELOW_MINUTES:
+        if rows[-1].get("minutesPlayed", 0) < stop_below:
             break
     n = sum(
-        len(json.loads((CACHE / f"{league}_{year}_p{p}.json").read_text()).get("results", []))
+        len(json.loads((cache / f"{league}_{year}_p{p}.json").read_text()).get("results", []))
         for p in range(page)
     )
     return f"{page} page(s), {n} rows"
@@ -88,6 +100,13 @@ def main() -> None:
                 print(f"{league} {year}: no Sofascore season", flush=True)
                 continue
             print(f"{league} {year}: {fetch(league, tid, year, ids[year])}", flush=True)
+    ucl = CACHE / "ucl"
+    ucl.mkdir(exist_ok=True)
+    ids = season_ids("UCL", UCL, ucl)
+    for year in SEASONS:
+        if year in ids:
+            done = fetch("UCL", UCL, year, ids[year], ucl, UCL_FIELDS, stop_below=1)
+            print(f"UCL {year}: {done}", flush=True)
     print(f"done; {requests_made} network requests this run")
 
 

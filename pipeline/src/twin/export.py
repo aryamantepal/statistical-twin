@@ -9,6 +9,7 @@ from twin import build, features
 from twin import model as mdl
 from twin.config import (
     ISOLATION_RADIUS,
+    LEAGUE_ONLY,
     LEAGUES,
     METRICS,
     OUT_DIR,
@@ -18,6 +19,17 @@ from twin.config import (
     Model,
     season_label,
 )
+
+
+def _source(metric: str, model: Model) -> str:
+    source = METRICS[metric].source
+    if not model.ucl:
+        return source
+    if metric in LEAGUE_ONLY:
+        return f"{source} · league matches only"
+    if source == "Understat":
+        return "Understat (league) + Sofascore (Champions League)"
+    return f"{source} · league + Champions League"
 
 
 def run(model: Model) -> tuple[pd.DataFrame, dict]:
@@ -45,7 +57,12 @@ def run(model: Model) -> tuple[pd.DataFrame, dict]:
     doc = {
         "model": {"key": model.key, "label": model.label, "description": model.description},
         "metrics": [
-            {"key": m, "label": METRICS[m].label, "source": METRICS[m].source} for m in metrics
+            {
+                "key": m,
+                "label": METRICS[m].label,
+                "source": _source(m, model),
+            }
+            for m in metrics
         ],
         "leagues": {k: v[0] for k, v in LEAGUES.items()},
         "radius": ISOLATION_RADIUS,
@@ -60,6 +77,7 @@ def run(model: Model) -> tuple[pd.DataFrame, dict]:
             "league": out["league"].tolist(),
             "season": [season_label(int(s)) for s in out["season"]],
             "minutes": out["minutes"].astype(int).tolist(),
+            **({"clMinutes": df["cl_minutes"].astype(int).tolist()} if "cl_minutes" in df else {}),
             # Percentiles ×10 as ints, raw per-90 values ×1000 as ints: row-major, len(metrics) per row.
             "pct": np.rint(pct.to_numpy() * 10).astype(int).ravel().tolist(),
             "raw": np.rint(raw.to_numpy() * 1000).astype(int).ravel().tolist(),
