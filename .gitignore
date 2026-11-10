@@ -15,3 +15,7 @@ web/next-env.d.ts
 .vercel
 .DS_Store
 web/tsconfig.tsbuildinfo
+
+# secrets
+.env
+.env*.local

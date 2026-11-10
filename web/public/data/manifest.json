@@ -2,16 +2,19 @@
  {
   "key": "core",
   "label": "13 metrics",
-  "description": "The reel's 13 metrics. 2015/16 and 2017/18\u20132023/24 (2016/17 has no open dribble / final-third data).",
+  "description": "The reel's 13 metrics, 2015/16 onward (Sofascore has no detailed player stats before 2015/16).",
   "seasons": [
    "2015/16",
+   "2016/17",
    "2017/18",
    "2018/19",
    "2019/20",
    "2020/21",
    "2021/22",
    "2022/23",
-   "2023/24"
+   "2023/24",
+   "2024/25",
+   "2025/26"
   ]
  },
  {
