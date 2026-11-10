@@ -18,6 +18,25 @@
   ]
  },
  {
+  "key": "core_cl",
+  "label": "13 metrics",
+  "description": "League and Champions League matches, 2015/16 onward. npxG, xA, xG per shot, xGChain and xGBuildup stay league-only: Understat has no Champions League data.",
+  "seasons": [
+   "2015/16",
+   "2016/17",
+   "2017/18",
+   "2018/19",
+   "2019/20",
+   "2020/21",
+   "2021/22",
+   "2022/23",
+   "2023/24",
+   "2024/25",
+   "2025/26"
+  ],
+  "variantOf": "core"
+ },
+ {
   "key": "understat",
   "label": "Understat only",
   "description": "The 9 Understat metrics, every season Understat covers (2014/15 onward).",

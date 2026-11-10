@@ -43,6 +43,7 @@ The pipeline builds three models, and the app switches between them:
 | Model | Metrics | Seasons | Size |
 |---|---|---|---|
 | `core` | the 13 above | 2015/16–2025/26 | 12,426 |
+| `core_cl` | the 13 above, league + Champions League (the app's "League + Champions League" switch) | 2015/16–2025/26 | 12,955 |
 | `understat` | the 9 Understat metrics | 2014/15–2025/26 | 13,588 |
 | `extended` | npG, shots on target, assists | 2009/10–2023/24 | 17,193 |
 
@@ -70,12 +71,20 @@ Data caveats:
   cards per player (no shots or fouls won), so the "since 2009" model has just 3 metrics. It is
   far too coarse to resolve a player like Yamal.
 - **xG per shot** uses Understat xG (penalties included) divided by all shots.
+- **Champions League (`core_cl`).** Non-penalty goals, shots, assists, key passes and the four
+  Sofascore stats add each player's Champions League totals from Sofascore, divided by league
+  + CL minutes. npxG, xA, xG per shot, xGChain and xGBuildup stay league-only (per 90 league
+  minutes): Understat has no CL data, and Sofascore's CL xG covers only recent seasons and is a
+  different model. The 1,500-minute cutoff counts league + CL minutes, so e.g. Frenkie de Jong
+  2024/25 (1,105 league minutes) qualifies; percentiles are still ranked within each domestic
+  league-season. CL games are joined on Sofascore's player id.
 
 ### The Sofascore download
 
 Sofascore has no public API and blocks non-browser clients, so `fetch_sofascore.py` requests its
 internal API with a browser TLS fingerprint (`curl_cffi`). It is run by hand, never in CI: one
-request every 2.5 s, about 185 requests for every league-season, each response cached forever in
+request every 2.5 s, about 370 requests for every league-season (league pages down to 500
+minutes) plus every Champions League season, each response cached forever in
 `data/cache/sofascore/` (gitignored), and it stops on the first error instead of retrying.
 
 ```bash

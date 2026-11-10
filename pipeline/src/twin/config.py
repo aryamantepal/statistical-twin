@@ -61,6 +61,11 @@ METRICS: dict[str, Metric] = {
 
 # Metrics that are rates rather than counts (not divided by minutes / 90).
 RATE_METRICS = {"xg_per_shot", "dribble_pct"}
+# xG-based metrics with no Champions League source: CL models keep them league-only.
+LEAGUE_ONLY = {"npxg", "xa", "xg_per_shot", "xgchain", "xgbuildup"}
+# CL models consider Understat seasons from this many league minutes, since league + CL
+# minutes decide who reaches MIN_MINUTES.
+UCL_FLOOR = 600
 
 
 @dataclass(frozen=True)
@@ -73,6 +78,10 @@ class Model:
     seasons: tuple[int, ...]
     # Which identity system rows come from: "understat" or "fbref".
     base: str
+    # Add Champions League matches to the count stats and minutes.
+    ucl: bool = False
+    # Shown as a League / League + CL switch on this model's tab instead of as its own tab.
+    variant_of: str | None = None
 
 
 CORE_METRICS = (
@@ -104,6 +113,17 @@ MODELS: dict[str, Model] = {
             CORE_METRICS,
             tuple(range(2015, 2026)),
             "understat",
+        ),
+        Model(
+            "core_cl",
+            "13 metrics",
+            "League and Champions League matches, 2015/16 onward. npxG, xA, xG per shot, xGChain "
+            "and xGBuildup stay league-only: Understat has no Champions League data.",
+            CORE_METRICS,
+            tuple(range(2015, 2026)),
+            "understat",
+            ucl=True,
+            variant_of="core",
         ),
         Model(
             "understat",
