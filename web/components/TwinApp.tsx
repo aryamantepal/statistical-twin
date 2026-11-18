@@ -9,6 +9,7 @@ import {
   distancesFrom,
   findByName,
   findSeason,
+  followingSeasons,
   label,
   loadManifest,
   loadModel,
@@ -399,6 +400,46 @@ function Body({
         text={`${label(data, s)}’s statistical twin is ${label(data, twins[0].index)}, ${twins[0].distance.toFixed(2)} apart.`}
         card={modelKey === "core" ? { href: `/twin/${slugs[s]}/opengraph-image`, filename: `${slugs[s]}.png` } : undefined}
       />
+
+      <section className="card next">
+        <h3>What they did next</h3>
+        <p className="sub">
+          Each top twin’s following two seasons, with their distance from {data.player[s]} {data.season[s]}. Within{" "}
+          {data.radius} counts as staying close.
+        </p>
+        <ol className="next-list">
+          {twins.slice(0, 3).map((tw, r) => (
+            <li key={tw.index}>
+              <div className="next-who">
+                <span className="rank">{r + 1}</span>
+                <span className="name">
+                  {label(data, tw.index)}
+                  <small>{data.team[tw.index]}</small>
+                </span>
+              </div>
+              <ul>
+                {followingSeasons(data, tw.index, dist).map((n) => (
+                  <li key={n.season}>
+                    <span className="ov">{n.season}</span>
+                    {n.row !== null && n.distance !== null ? (
+                      <span>
+                        {data.team[n.row]} · {data.minutes[n.row].toLocaleString()} min · <b>{n.distance.toFixed(2)}</b>{" "}
+                        apart <em>{n.distance <= data.radius ? "(stayed close)" : "(moved away)"}</em>
+                      </span>
+                    ) : (
+                      <span className="none">
+                        {n.future
+                          ? "No season yet."
+                          : "Not in the data (outside the big five leagues, or too few minutes)."}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <section className="grid2">
         <div className="card">
