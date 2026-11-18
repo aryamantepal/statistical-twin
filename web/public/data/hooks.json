@@ -1,0 +1,238 @@
+{
+ "core": {
+  "radius": 3.5,
+  "isolated": [
+   {
+    "row": 7873,
+    "player": "Neymar",
+    "team": "Paris Saint Germain",
+    "season": "2017/18",
+    "isolation": 23
+   },
+   {
+    "row": 5989,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2020/21",
+    "isolation": 47
+   },
+   {
+    "row": 5495,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2018/19",
+    "isolation": 51
+   },
+   {
+    "row": 9026,
+    "player": "Neymar",
+    "team": "Paris Saint Germain",
+    "season": "2022/23",
+    "isolation": 59
+   },
+   {
+    "row": 5418,
+    "player": "Neto",
+    "team": "Valencia",
+    "season": "2017/18",
+    "isolation": 64
+   },
+   {
+    "row": 5750,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2019/20",
+    "isolation": 68
+   }
+  ],
+  "lead": {
+   "subject": {
+    "row": 7171,
+    "player": "Lamine Yamal",
+    "team": "Barcelona",
+    "season": "2025/26"
+   },
+   "twin": {
+    "row": 5750,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2019/20"
+   },
+   "distance": 1.3,
+   "rank": 1
+  }
+ },
+ "core_cl": {
+  "radius": 3.5,
+  "isolated": [
+   {
+    "row": 8255,
+    "player": "Neymar",
+    "team": "Paris Saint Germain",
+    "season": "2017/18",
+    "isolation": 24
+   },
+   {
+    "row": 5689,
+    "player": "Neto",
+    "team": "Valencia",
+    "season": "2017/18",
+    "isolation": 59
+   },
+   {
+    "row": 5768,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2018/19",
+    "isolation": 61
+   },
+   {
+    "row": 9442,
+    "player": "Neymar",
+    "team": "Paris Saint Germain",
+    "season": "2022/23",
+    "isolation": 61
+   },
+   {
+    "row": 6277,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2020/21",
+    "isolation": 64
+   },
+   {
+    "row": 8949,
+    "player": "Neymar",
+    "team": "Paris Saint Germain",
+    "season": "2020/21",
+    "isolation": 64
+   }
+  ],
+  "lead": {
+   "subject": {
+    "row": 7530,
+    "player": "Lamine Yamal",
+    "team": "Barcelona",
+    "season": "2025/26"
+   },
+   "twin": {
+    "row": 9438,
+    "player": "Lionel Messi",
+    "team": "Paris Saint Germain",
+    "season": "2022/23"
+   },
+   "distance": 1.28,
+   "rank": 2
+  }
+ },
+ "understat": {
+  "radius": 3.5,
+  "isolated": [
+   {
+    "row": 4870,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2018/19",
+    "isolation": 177
+   },
+   {
+    "row": 4377,
+    "player": "Neymar",
+    "team": "Paris Saint Germain",
+    "season": "2017/18",
+    "isolation": 220
+   },
+   {
+    "row": 6028,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2019/20",
+    "isolation": 263
+   },
+   {
+    "row": 7103,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2020/21",
+    "isolation": 276
+   },
+   {
+    "row": 6698,
+    "player": "Kylian Mbappe-Lottin",
+    "team": "Paris Saint Germain",
+    "season": "2019/20",
+    "isolation": 322
+   },
+   {
+    "row": 6463,
+    "player": "Josip Ilicic",
+    "team": "Atalanta",
+    "season": "2019/20",
+    "isolation": 322
+   }
+  ],
+  "lead": {
+   "subject": {
+    "row": 12737,
+    "player": "Lamine Yamal",
+    "team": "Barcelona",
+    "season": "2025/26"
+   },
+   "twin": {
+    "row": 10068,
+    "player": "Lionel Messi",
+    "team": "Paris Saint Germain",
+    "season": "2022/23"
+   },
+   "distance": 0.62,
+   "rank": 1
+  }
+ },
+ "extended": {
+  "radius": 3.5,
+  "isolated": [
+   {
+    "row": 14483,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2018/19",
+    "isolation": 2031
+   },
+   {
+    "row": 7725,
+    "player": "Karim Benzema",
+    "team": "Real Madrid",
+    "season": "2021/22",
+    "isolation": 2141
+   },
+   {
+    "row": 8737,
+    "player": "Fabrizio Miccoli",
+    "team": "Palermo",
+    "season": "2011/12",
+    "isolation": 2180
+   },
+   {
+    "row": 7257,
+    "player": "Neymar",
+    "team": "Paris S-G",
+    "season": "2017/18",
+    "isolation": 2630
+   },
+   {
+    "row": 4512,
+    "player": "Kylian Mbappé",
+    "team": "Paris S-G",
+    "season": "2021/22",
+    "isolation": 2697
+   },
+   {
+    "row": 14484,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2019/20",
+    "isolation": 2723
+   }
+  ]
+ }
+}
