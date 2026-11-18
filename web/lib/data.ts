@@ -23,11 +23,17 @@ export type RawDoc = {
     league: string[];
     season: string[];
     minutes: number[];
+    /** Position code: GK/DF/MF/FW, a "/"-joined set of outfield roles, or "" when unknown. */
+    pos?: string[];
+    /** The group `zp` was standardised within: a position code, or "other" for pooled leftovers. */
+    posGroup?: string[];
     /** Champions League minutes included in `minutes` (CL models only). */
     clMinutes?: number[];
     pct: number[];
     raw: number[];
     z: number[];
+    /** `z` re-standardised inside each position group. */
+    zp?: number[];
     x: number[];
     y: number[];
     iso: number[];
@@ -54,10 +60,14 @@ export type Dataset = {
   league: string[];
   season: string[];
   minutes: Int32Array;
+  pos: string[] | null;
+  posGroup: string[] | null;
   clMinutes: Int32Array | null;
   pct: Float32Array; // 0–100
   raw: Float32Array; // per-90 or rate
   z: Float32Array;
+  /** Within-position z-scores, or null when the model has no position data. */
+  zp: Float32Array | null;
   x: Float32Array;
   y: Float32Array;
   iso: Int32Array;
@@ -122,10 +132,13 @@ export function decode(doc: RawDoc): Dataset {
     league: r.league,
     season: r.season,
     minutes: Int32Array.from(r.minutes),
+    pos: r.pos ?? null,
+    posGroup: r.posGroup ?? null,
     clMinutes: r.clMinutes ? Int32Array.from(r.clMinutes) : null,
     pct: Float32Array.from(r.pct, (v) => v / 10),
     raw: Float32Array.from(r.raw, (v) => v / 1000),
     z: Float32Array.from(r.z, (v) => v / 100),
+    zp: r.zp ? Float32Array.from(r.zp, (v) => v / 100) : null,
     x: Float32Array.from(r.x),
     y: Float32Array.from(r.y),
     iso,
@@ -165,6 +178,46 @@ export function distancesFrom(d: Dataset, i: number): Float32Array {
     out[j] = Math.sqrt(s);
   }
   return out;
+}
+
+/** The dataset measured in within-position z-scores, or `d` itself when it has none. */
+export function withinPosition(d: Dataset): Dataset {
+  return d.zp ? { ...d, z: d.zp } : d;
+}
+
+/** Nearest seasons by other players, from precomputed distances (any z space). */
+export function nearestFrom(d: Dataset, i: number, dist: Float32Array): { index: number; distance: number }[] {
+  const out: { index: number; distance: number }[] = [];
+  for (let j = 0; j < d.n; j++) {
+    if (d.id[j] === d.id[i]) continue;
+    if (out.length === d.k && dist[j] >= out[d.k - 1].distance) continue;
+    let p = out.length;
+    while (p > 0 && out[p - 1].distance > dist[j]) p--;
+    out.splice(p, 0, { index: j, distance: dist[j] });
+    if (out.length > d.k) out.pop();
+  }
+  return out;
+}
+
+/** Other-player seasons within the radius, and the median distance to all of them. */
+export function isolationFrom(d: Dataset, i: number, dist: Float32Array): { within: number; typical: number } {
+  const others: number[] = [];
+  let within = 0;
+  for (let j = 0; j < d.n; j++) {
+    if (d.id[j] === d.id[i]) continue;
+    others.push(dist[j]);
+    if (dist[j] <= d.radius) within++;
+  }
+  others.sort((a, b) => a - b);
+  const mid = others.length >> 1;
+  const typical = others.length % 2 ? others[mid] : (others[mid - 1] + others[mid]) / 2;
+  return { within, typical };
+}
+
+/** Human label for a position code, e.g. "DF/MF" -> "defender / midfielder". */
+export function positionLabel(code: string): string {
+  const names: Record<string, string> = { GK: "goalkeeper", DF: "defender", MF: "midfielder", FW: "forward" };
+  return code ? code.split("/").map((c) => names[c] ?? c).join(" / ") : "position unknown";
 }
 
 export function neighboursOf(d: Dataset, i: number): { index: number; distance: number }[] {

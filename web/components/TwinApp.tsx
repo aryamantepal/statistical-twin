@@ -12,10 +12,14 @@ import {
   label,
   loadManifest,
   loadModel,
+  isolationFrom,
   moreIsolated,
+  nearestFrom,
   neighboursOf,
+  positionLabel,
   rankFrom,
   shortSeason,
+  withinPosition,
 } from "@/lib/data";
 import { slugsFor } from "@/lib/slug";
 import DotPlot from "./DotPlot";
@@ -31,6 +35,7 @@ type Carry = { id: string | null; player: string | null; season: string | null }
 type Missing = { player: string | null; season: string; model: string };
 
 function initialSelection(d: Dataset, { id, player, season }: Carry): { sel: Selection; found: boolean } {
+  // A fresh model always starts on overall twins; the within-position switch resets with it.
   let subject = findSeason(d, id, season);
   if (subject < 0 && player && season) subject = findByName(d, player, season);
   const found = subject >= 0;
@@ -58,6 +63,7 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
   const [missing, setMissing] = useState<Missing | null>(null);
   const [view, setView] = useState<"map" | "radial">("radial");
   const [showAll, setShowAll] = useState(false);
+  const [within, setWithin] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Load a model, then select the carried player-season (matched by name when ids differ).
@@ -72,6 +78,7 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
           return;
         }
         setModelKey(key);
+        setWithin(false);
         setData(d);
         setSel(sel);
         setMissing(!found && carry.season ? { player: carry.player, season: carry.season, model: d.info.label } : null);
@@ -117,8 +124,17 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
   const pickSubject = (i: number) => {
     if (!data) return;
     acted.current = true;
-    setSel({ subject: i, twin: data.nn[i * data.k] });
+    const lens = within ? withinPosition(data) : data;
+    setSel({ subject: i, twin: within ? nearestFrom(lens, i, distancesFrom(lens, i))[0].index : data.nn[i * data.k] });
     setMissing(null);
+    setShowAll(false);
+  };
+  // Switching lens re-ranks the twins, so the compared season restarts at the new nearest twin.
+  const switchLens = (next: boolean) => {
+    if (!data || !sel) return;
+    setWithin(next);
+    const lens = next ? withinPosition(data) : data;
+    setSel({ ...sel, twin: next ? nearestFrom(lens, sel.subject, distancesFrom(lens, sel.subject))[0].index : data.nn[sel.subject * data.k] });
     setShowAll(false);
   };
   const pickTwin = (i: number) => sel && i !== sel.subject && setSel({ ...sel, twin: i });
@@ -169,6 +185,16 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
                   </button>
                 </div>
               )}
+              {data.zp && (
+                <div className="tabs comp" role="group" aria-label="Twin comparison">
+                  <button aria-pressed={!within} onClick={() => switchLens(false)}>
+                    Overall twins
+                  </button>
+                  <button aria-pressed={within} onClick={() => switchLens(true)}>
+                    Within position
+                  </button>
+                </div>
+              )}
               <p className="model-note">{data.info.description}</p>
             </div>
           )}
@@ -207,6 +233,7 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
             sel={sel}
             view={view}
             setView={setView}
+            within={within}
             showAll={showAll}
             setShowAll={setShowAll}
             pickSubject={pickSubject}
@@ -228,6 +255,11 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
                   Percentiles become normal scores and are standardised, so every stat counts equally. Distance is
                   straight-line distance across all of them.
                 </li>
+                <li>
+                  Goalkeepers are left out. “Within position” re-standardises each stat inside each position group
+                  (defenders, midfielders, forwards, and mixed-role seasons), so a defender is matched on how he
+                  compares with other defenders.
+                </li>
                 <li>A player’s own other seasons never count as their twin, or towards isolation.</li>
                 <li>Map: right = more creator, left = more finisher, up = elite across the board. Dot size = minutes.</li>
               </ul>
@@ -247,6 +279,9 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
                   <a href="https://fbref.com">FBref</a> (Opta), via the{" "}
                   <a href="https://github.com/JaseZiv/worldfootballR_data">worldfootballR_data</a> mirror: goals,
                   assists and shots on target for the “Since 2009” model.
+                </li>
+                <li>
+                  Positions come from Understat’s per-season role list, or FBref’s primary position in “Since 2009”.
                 </li>
               </ul>
               {data && data.log.length > 0 && (
@@ -279,6 +314,7 @@ function Body({
   sel,
   view,
   setView,
+  within,
   showAll,
   setShowAll,
   pickSubject,
@@ -288,6 +324,7 @@ function Body({
   sel: Selection;
   view: "map" | "radial";
   setView: (v: "map" | "radial") => void;
+  within: boolean;
   showAll: boolean;
   setShowAll: (v: boolean) => void;
   pickSubject: (i: number) => void;
@@ -295,10 +332,14 @@ function Body({
 }) {
   const s = sel.subject;
   const t = sel.twin;
-  const twins = neighboursOf(data, s);
+  // The lens decides which z-scores distances are measured in; everything below reads `lens`.
+  const lens = useMemo(() => (within ? withinPosition(data) : data), [data, within]);
+  const dist = useMemo(() => distancesFrom(lens, s), [lens, s]);
+  const twins = useMemo(() => (within ? nearestFrom(lens, s, dist) : neighboursOf(data, s)), [within, lens, data, s, dist]);
+  const iso = useMemo(() => (within ? isolationFrom(lens, s, dist) : null), [within, lens, s, dist]);
   const shown = showAll ? twins : twins.slice(0, 10);
   const maxD = twins[twins.length - 1]?.distance || 1;
-  const dist = useMemo(() => distancesFrom(data, s), [data, s]);
+  const topTwins = useMemo(() => twins.slice(0, 10).map((t) => t.index), [twins]);
   const twinRank = useMemo(() => (t === null ? null : rankFrom(data, s, dist, t)), [data, s, dist, t]);
   const others = useMemo(() => data.n - data.id.filter((id) => id === data.id[s]).length, [data, s]);
 
@@ -312,7 +353,8 @@ function Body({
             {data.player[s]} <span>{data.season[s]}</span>
           </h2>
           <p>
-            {data.team[s]} · {data.leagues[data.league[s]]} · {data.minutes[s].toLocaleString()} minutes
+            {data.team[s]} · {data.leagues[data.league[s]]}
+            {data.pos && ` · ${positionLabel(data.pos[s])}`} · {data.minutes[s].toLocaleString()} minutes
             {data.clMinutes && data.clMinutes[s] > 0 && ` (${data.clMinutes[s].toLocaleString()} in the Champions League)`}
           </p>
         </div>
@@ -323,15 +365,16 @@ function Body({
         </div>
         <div className="fact">
           <span className="ov">Seasons within {data.radius}</span>
-          <b>{data.iso[s].toLocaleString()}</b>
+          <b>{(iso ? iso.within : data.iso[s]).toLocaleString()}</b>
           <p>
-            The median season has {Math.round(data.medianIsolation).toLocaleString()}.{" "}
-            {moreIsolated(data, s).toLocaleString()} seasons are more isolated.
+            {iso
+              ? "Other players’ seasons within that distance, in within-position scores."
+              : `The median season has ${Math.round(data.medianIsolation).toLocaleString()}. ${moreIsolated(data, s).toLocaleString()} seasons are more isolated.`}
           </p>
         </div>
         <div className="fact">
           <span className="ov">Typical distance</span>
-          <b>{data.typical[s].toFixed(1)}</b>
+          <b>{(iso ? iso.typical : data.typical[s]).toFixed(1)}</b>
           <p>Median distance to every other season.</p>
         </div>
       </section>
@@ -339,7 +382,11 @@ function Body({
       <section className="grid2">
         <div className="card">
           <h3>Twins</h3>
-          <p className="sub">The closest seasons by other players. Pick one to compare.</p>
+          <p className="sub">
+            {within
+              ? "The closest seasons by other players, once every stat is measured against players in the same position. Pick one to compare."
+              : "The closest seasons by other players. Pick one to compare."}
+          </p>
           <ol className="twins">
             {shown.map((tw, r) => (
               <li key={tw.index}>
@@ -423,7 +470,7 @@ function Body({
             </button>
           </div>
         </div>
-        <MapView data={data} subject={s} twin={t} mode={view} dist={dist} onPick={pickTwin} />
+        <MapView data={data} subject={s} twin={t} mode={view} dist={dist} topTwins={topTwins} onPick={pickTwin} />
       </section>
     </>
   );

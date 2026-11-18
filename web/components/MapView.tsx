@@ -11,6 +11,8 @@ type Props = {
   mode: "map" | "radial";
   /** Distance from `subject` to every row. */
   dist: Float32Array;
+  /** Row indices of the subject's ten nearest twins, highlighted on the map. */
+  topTwins: number[];
   onPick: (i: number) => void;
 };
 
@@ -18,12 +20,12 @@ const PAD = { l: 34, r: 16, t: 16, b: 34 };
 const RINGS = [2, 4, 6, 8];
 const MAX_D = 10;
 
-export default function MapView({ data, subject, twin, mode, dist, onPick }: Props) {
+export default function MapView({ data, subject, twin, mode, dist, topTwins, onPick }: Props) {
   const scheme = useSchemeKey();
   const pos = useRef<{ x: Float32Array; y: Float32Array; visible: Uint8Array } | null>(null);
   const [hover, setHover] = useState<{ i: number; x: number; y: number } | null>(null);
 
-  const top = useMemo(() => new Set(Array.from(data.nn.subarray(subject * data.k, subject * data.k + 10))), [data, subject]);
+  const top = useMemo(() => new Set(topTwins), [topTwins]);
   const bounds = useMemo(() => {
     let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
     for (let i = 0; i < data.n; i++) {

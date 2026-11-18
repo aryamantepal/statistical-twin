@@ -48,6 +48,7 @@ def load() -> pd.DataFrame:
         if name == "standard":
             df = df.groupby(keys, as_index=False).agg(
                 player=("Player", "first"),
+                pos=("Pos", "first"),
                 squad=("Squad", lambda s: ",".join(dict.fromkeys(s))),
                 **{v: (k, lambda s: s.sum(min_count=1)) for k, v in cols.items()},
             )

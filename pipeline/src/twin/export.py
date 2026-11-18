@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from twin import build, features
+from twin import build, features, positions
 from twin import model as mdl
 from twin.config import (
     ISOLATION_RADIUS,
@@ -46,9 +46,13 @@ def run(model: Model) -> tuple[pd.DataFrame, dict]:
     scores = features.normal_scores(raw, groups) if ZSCORE == "normal" else pct
     z, mean, std = mdl.zscore(scores.to_numpy())
     nb = mdl.neighbours(z, df["player_id"].to_numpy(), TOP_N, ISOLATION_RADIUS)
+    pos = df["pos"].fillna("")
+    group = positions.groups(pos)
+    zp = positions.zscore_within(scores.to_numpy(), group)
     x, y = mdl.map_axes(z, pct.to_numpy(), [METRICS[m].axis for m in metrics])
 
     out = df[["player_id", "player", "team", "league", "season", "minutes"]].copy()
+    out["pos"] = pos
     out[[f"{m}" for m in metrics]] = raw.to_numpy()
     out[[f"{m}_pct" for m in metrics]] = pct.to_numpy()
     out["x"], out["y"] = x, y
@@ -77,12 +81,17 @@ def run(model: Model) -> tuple[pd.DataFrame, dict]:
             "league": out["league"].tolist(),
             "season": [season_label(int(s)) for s in out["season"]],
             "minutes": out["minutes"].astype(int).tolist(),
+            # Position code (see positions.py; "" = unknown) and the group `zp` is standardised in.
+            "pos": pos.tolist(),
+            "posGroup": group.tolist(),
             **({"clMinutes": df["cl_minutes"].astype(int).tolist()} if "cl_minutes" in df else {}),
             # Percentiles ×10 as ints, raw per-90 values ×1000 as ints: row-major, len(metrics) per row.
             "pct": np.rint(pct.to_numpy() * 10).astype(int).ravel().tolist(),
             "raw": np.rint(raw.to_numpy() * 1000).astype(int).ravel().tolist(),
             # Standardised scores ×100: the space distances are measured in.
             "z": np.rint(z * 100).astype(int).ravel().tolist(),
+            # The same scores standardised inside each position group: within-position twins.
+            "zp": np.rint(zp * 100).astype(int).ravel().tolist(),
             "x": np.round(x, 3).tolist(),
             "y": np.round(y, 2).tolist(),
             "iso": nb.isolation.tolist(),

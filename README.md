@@ -55,10 +55,10 @@ The pipeline builds three models, and the app switches between them:
 
 | Model | Metrics | Seasons | Size |
 |---|---|---|---|
-| `core` | the 13 above | 2015/16–2025/26 | 12,426 |
-| `core_cl` | the 13 above, league + Champions League (the app's "League + Champions League" switch) | 2015/16–2025/26 | 12,955 |
-| `understat` | the 9 Understat metrics | 2014/15–2025/26 | 13,588 |
-| `extended` | npG, shots on target, assists | 2009/10–2023/24 | 17,193 |
+| `core` | the 13 above | 2015/16–2025/26 | 11,326 |
+| `core_cl` | the 13 above, league + Champions League (the app's "League + Champions League" switch) | 2015/16–2025/26 | 11,835 |
+| `understat` | the 9 Understat metrics | 2014/15–2025/26 | 12,389 |
+| `extended` | npG, shots on target, assists | 2009/10–2023/24 | 15,688 |
 
 ## Data sources
 
@@ -83,6 +83,15 @@ Data caveats:
 - **Extended model.** Before 2016/17 FBref carries only goals, assists, shots on target and
   cards per player (no shots or fouls won), so the "since 2009" model has just 3 metrics. It is
   far too coarse to resolve a player like Yamal.
+- **Positions and goalkeepers.** Each row carries a position code. For the Understat-based models
+  it comes from Understat's per-season `position` field, the roles the player appeared in (`DF`,
+  `MF`, `FW`, or a set like `MF/FW`; Understat doesn't say which role dominated); `extended` uses
+  FBref's primary position. Coverage is 100% of exported rows (a season with no outfield role
+  would be exported as unknown, `""`, rather than guessed). Goalkeepers (`GK`) are dropped from
+  every model before scoring: their near-zero outfield stats distorted percentiles, twins and
+  isolation. The app's "Within position" switch uses `zp`, the same normal scores standardised
+  inside each position group (groups under 200 rows are pooled as `other`), and ranks twins
+  across all positions in that space.
 - **xG per shot** uses Understat xG (penalties included) divided by all shots.
 - **Champions League (`core_cl`).** Non-penalty goals, shots, assists, key passes and the four
   Sofascore stats add each player's Champions League totals from Sofascore, divided by league
@@ -121,13 +130,13 @@ reference numbers come from Kickonomics.
 
 | Check | Reel | This build |
 |---|---|---|
-| Universe (core) | 11,313 | 12,426 |
-| Universe (since 2009) | 17,202 | 17,193 |
+| Universe (core) | 11,313 | 11,326 |
+| Universe (since 2009) | 17,202 | 15,688 |
 | Yamal 25/26 dribbles | 243 att. / 133 succ. | 243 / 133 |
 | Yamal 25/26 #1 | Messi 15/16 (≈3.1) | Messi 19/20 (1.30). Messi 15/16 is #5. |
 | Yamal 25/26, rest of reel top 5 | Neymar 16/17, Iličić 18/19, Sané 23/24, Olise 24/25 | Neymar 16/17 #8, Iličić 18/19 #7, Olise 24/25 #6; Sané 23/24 outside the top 10 |
-| Messi 15/16 #1 / #2 | Mbappé 21/22 / Yamal 25/26 | Yamal 25/26 (1.50) / Mbappé 21/22 (1.67) |
-| Median isolation | 3,596 / 11,313 (32%) | 3,494 / 12,426 (28%) |
+| Messi 15/16 #1 / #2 | Mbappé 21/22 / Yamal 25/26 | Yamal 25/26 (1.52) / Mbappé 21/22 (1.71) |
+| Median isolation | 3,596 / 11,313 (32%) | 2,515 / 11,326 (22%) |
 
 **The reel's names come back, in a slightly different order.** Our top 10 for Yamal 25/26
 is four Messi seasons (19/20, 22/23, 17/18, 15/16), Olise twice, Iličić 18/19, Neymar 16/17,
