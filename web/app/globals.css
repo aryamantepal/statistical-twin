@@ -242,6 +242,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 
 .viz { position: relative; }
 .viz canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
+.career-toggle { display: inline-flex; gap: 6px; align-items: center; margin-top: 8px; font-size: 13px; color: var(--text); cursor: pointer; }
 .tooltip {
   position: absolute; pointer-events: none; z-index: 10; background: var(--paper); color: var(--ink);
   border-radius: 6px; padding: 7px 10px; font-size: 12.5px; white-space: nowrap; transform: translate(12px, -50%);
