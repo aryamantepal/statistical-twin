@@ -36,7 +36,11 @@ export function prerenderedSlugs(): string[] {
  * (the alphabetically smaller slug first, matching `vsPath`). Every other pair is served by the
  * client-side fallback on /vs.
  */
-export function prerenderedPairs(top = 10): { a: string; b: string }[] {
+// Pairs prerendered regardless of rank, so their links unfurl with a per-pair title.
+// Yamal 25/26 vs Messi 15/16 is the reel's comparison (5th in Yamal's twin list).
+const FEATURED_PAIRS: [string, string][] = [["lamine-yamal-2025-26", "lionel-messi-2015-16"]];
+
+export function prerenderedPairs(top = 3): { a: string; b: string }[] {
   const { data, slugs } = core();
   const subjects = new Set(prerenderedSlugs());
   const seen = new Set<string>();
@@ -51,6 +55,13 @@ export function prerenderedPairs(top = 10): { a: string; b: string }[] {
       seen.add(key);
       out.push({ a, b });
     }
+  }
+  const known = new Set(slugs);
+  for (const pair of FEATURED_PAIRS) {
+    const [a, b] = [...pair].sort();
+    if (!known.has(a) || !known.has(b) || seen.has(`${a}/${b}`)) continue;
+    seen.add(`${a}/${b}`);
+    out.push({ a, b });
   }
   return out;
 }
