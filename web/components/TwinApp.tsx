@@ -404,8 +404,8 @@ function Body({
       <section className="card next">
         <h3>What they did next</h3>
         <p className="sub">
-          Each top twin’s following two seasons, with their distance from {data.player[s]} {data.season[s]}. Within{" "}
-          {data.radius} counts as staying close.
+          Each top twin’s following two seasons, with their distance from {data.player[s]} {data.season[s]}, and whether
+          that season moved closer or further than the twin season itself.
         </p>
         <ol className="next-list">
           {twins.slice(0, 3).map((tw, r) => (
@@ -424,7 +424,7 @@ function Body({
                     {n.row !== null && n.distance !== null ? (
                       <span>
                         {data.team[n.row]} · {data.minutes[n.row].toLocaleString()} min · <b>{n.distance.toFixed(2)}</b>{" "}
-                        apart <em>{n.distance <= data.radius ? "(stayed close)" : "(moved away)"}</em>
+                        apart <em>{n.distance <= tw.distance ? "(closer)" : "(further)"}</em>
                       </span>
                     ) : (
                       <span className="none">
