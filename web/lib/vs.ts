@@ -33,6 +33,19 @@ export function pairStats(d: Dataset, a: number, b: number): PairStats {
   return { distance: Math.sqrt(s), rankAB: rankIn(d, a, b), rankBA: rankIn(d, b, a) };
 }
 
+/** The stats where two seasons sit closest together and the one where they differ most, in z units. */
+export function metricGaps(d: Dataset, a: number, b: number, closest = 2): { closest: string[]; biggest: string } {
+  const gaps = d.metrics
+    .map((metric, c) => ({ label: metric.label, gap: Math.abs(d.z[a * d.m + c] - d.z[b * d.m + c]) }))
+    .sort((x, y) => x.gap - y.gap);
+  return { closest: gaps.slice(0, closest).map((g) => g.label), biggest: gaps[gaps.length - 1].label };
+}
+
+export function gapSentence(d: Dataset, a: number, b: number): string {
+  const { closest, biggest } = metricGaps(d, a, b);
+  return `Closest on ${closest.join(" and ")}; furthest apart on ${biggest}.`;
+}
+
 export function ordinal(n: number): string {
   const v = n % 100;
   const suffix = v >= 11 && v <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th";

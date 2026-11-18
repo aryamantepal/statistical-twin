@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import VsApp from "@/components/VsApp";
 import { label, shortSeason } from "@/lib/data";
 import { core, prerenderedPairs } from "@/lib/server-data";
-import { ordinal, pairStats, vsPath } from "@/lib/vs";
+import { gapSentence, ordinal, pairStats, vsPath } from "@/lib/vs";
 
 export const dynamicParams = false;
 
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : "";
   const description =
     `${label(d, i)} (${d.team[i]}) and ${label(d, j)} (${d.team[j]}) are ${distance.toFixed(2)} apart ` +
-    `across 13 per-90 stats.${ranks}`;
+    `across 13 per-90 stats. ${gapSentence(d, i, j)}${ranks}`;
   const url = vsPath(a, b);
   // Setting openGraph here replaces the parent's file-convention image, so point at the shared card explicitly.
   const image = { url: "/vs/opengraph-image", width: 1200, height: 630, alt: "A head-to-head comparison of two statistical twins" };

@@ -14,7 +14,7 @@ import {
   shortSeason,
 } from "@/lib/data";
 import { slugsFor } from "@/lib/slug";
-import { ordinal, pairStats, vsPath } from "@/lib/vs";
+import { gapSentence, ordinal, pairStats, vsPath } from "@/lib/vs";
 import DotPlot from "./DotPlot";
 
 type Pair = { a: number; b: number };
@@ -199,7 +199,10 @@ function Versus({ data, model, pair }: { data: Dataset; model: string; pair: Pai
         <div className="fact">
           <span className="ov">Distance</span>
           <b>{stats.distance.toFixed(2)}</b>
-          <p>Straight-line distance across {data.m} standardised stats. The median season is {data.typical[a].toFixed(1)} from {data.player[a]}.</p>
+          <p>
+            Straight-line distance across {data.m} standardised stats. The median season is {data.typical[a].toFixed(1)} from{" "}
+            {data.player[a]}. {gapSentence(data, a, b)}
+          </p>
         </div>
         <div className="fact">
           <span className="ov">{data.player[b]}’s rank in {data.player[a]}’s twins</span>
