@@ -202,6 +202,9 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
                 </div>
               )}
               <p className="model-note">{data.info.description}</p>
+              <p className="model-note">
+                <a href={`${basePath}/blend`}>Blend two seasons</a> to find the closest real one.
+              </p>
             </div>
           )}
         </section>
