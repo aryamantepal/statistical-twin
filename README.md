@@ -1,8 +1,21 @@
 # Statistical Twin
 
-An open-source rebuild of Kickonomics' "statistical twin" analysis. Pick any big-five-league
-player-season (1,500+ minutes) and find the seasons most like it, using a nearest-neighbour
-model over per-90 percentiles.
+![Lamine Yamal 2025/26: the ten nearest twins, led by Lionel Messi 2019/20 at distance 1.30, and all 12,426 big-five seasons on the map.](docs/hero.png)
+
+## Try it
+
+The live app is [statistical-twin.aryamantepal.com](https://statistical-twin.aryamantepal.com).
+
+- [Lamine Yamal 2025/26](https://statistical-twin.aryamantepal.com/twin/lamine-yamal-2025-26)
+- [Lionel Messi 2019/20](https://statistical-twin.aryamantepal.com/twin/lionel-messi-2019-20)
+- [Lionel Messi 2015/16](https://statistical-twin.aryamantepal.com/twin/lionel-messi-2015-16)
+
+An open-source rebuild of Kickonomics' "statistical twin" analysis. Any big-five-league
+player-season with at least 1,500 minutes is described by 13 per-90 stats, ranked as
+percentiles within its own league and season, turned into normal scores and compared by
+Euclidean distance. Lamine Yamal 2025/26's nearest twin is Lionel Messi 2019/20, at
+distance 1.30; the reel's names come back, in a slightly different order. See
+[How close is this to the reel?](#how-close-is-this-to-the-reel).
 
 - `pipeline/`: Python (uv). Downloads the data, links players across sources, computes
   percentiles, z-scores, neighbours, isolation and map coordinates, then exports static JSON.
