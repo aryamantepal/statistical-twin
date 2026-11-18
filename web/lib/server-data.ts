@@ -30,3 +30,27 @@ export function prerenderedSlugs(): string[] {
   const order = Array.from({ length: data.n }, (_, i) => i).sort((a, b) => data.minutes[b] - data.minutes[a]);
   return order.slice(0, limit).map((i) => slugs[i]);
 }
+
+/**
+ * Canonical /vs pairs to prerender: each season's top-10 twins, deduped so A/B and B/A are one page
+ * (the alphabetically smaller slug first, matching `vsPath`). Every other pair is served by the
+ * client-side fallback on /vs.
+ */
+export function prerenderedPairs(top = 10): { a: string; b: string }[] {
+  const { data, slugs } = core();
+  const subjects = new Set(prerenderedSlugs());
+  const seen = new Set<string>();
+  const out: { a: string; b: string }[] = [];
+  for (let i = 0; i < data.n; i++) {
+    if (!subjects.has(slugs[i])) continue;
+    for (let r = 0; r < top; r++) {
+      const j = data.nn[i * data.k + r];
+      const [a, b] = slugs[i] <= slugs[j] ? [slugs[i], slugs[j]] : [slugs[j], slugs[i]];
+      const key = `${a}/${b}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ a, b });
+    }
+  }
+  return out;
+}

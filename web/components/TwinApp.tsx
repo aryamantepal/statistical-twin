@@ -22,11 +22,13 @@ import {
   withinPosition,
 } from "@/lib/data";
 import { slugsFor } from "@/lib/slug";
+import { ordinal, vsHref } from "@/lib/vs";
 import DotPlot from "./DotPlot";
 import Hooks, { type HooksDoc, loadHooks } from "./Hooks";
 import MapView from "./MapView";
 import SchemePicker from "./SchemePicker";
 import Search from "./Search";
+import ShareRow from "./ShareRow";
 
 const DEFAULT = { model: "core", player: "Lamine Yamal", season: "2025/26" };
 
@@ -235,6 +237,7 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
         ) : (
           <Body
             data={data}
+            modelKey={modelKey!}
             sel={sel}
             view={view}
             setView={setView}
@@ -316,6 +319,7 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
 
 function Body({
   data,
+  modelKey,
   sel,
   view,
   setView,
@@ -326,6 +330,7 @@ function Body({
   pickTwin,
 }: {
   data: Dataset;
+  modelKey: string;
   sel: Selection;
   view: "map" | "radial";
   setView: (v: "map" | "radial") => void;
@@ -346,6 +351,7 @@ function Body({
   const maxD = twins[twins.length - 1]?.distance || 1;
   const topTwins = useMemo(() => twins.slice(0, 10).map((t) => t.index), [twins]);
   const twinRank = useMemo(() => (t === null ? null : rankFrom(data, s, dist, t)), [data, s, dist, t]);
+  const slugs = slugsFor(data);
   const others = useMemo(() => data.n - data.id.filter((id) => id === data.id[s]).length, [data, s]);
 
   return (
@@ -384,13 +390,23 @@ function Body({
         </div>
       </section>
 
+      <ShareRow
+        path={
+          modelKey === "core"
+            ? `/twin/${slugs[s]}`
+            : `/?${new URLSearchParams({ m: modelKey, id: data.id[s], p: data.player[s], s: data.season[s] })}`
+        }
+        text={`${label(data, s)}’s statistical twin is ${label(data, twins[0].index)}, ${twins[0].distance.toFixed(2)} apart.`}
+        card={modelKey === "core" ? { href: `/twin/${slugs[s]}/opengraph-image`, filename: `${slugs[s]}.png` } : undefined}
+      />
+
       <section className="grid2">
         <div className="card">
           <h3>Twins</h3>
           <p className="sub">
             {within
-              ? "The closest seasons by other players, once every stat is measured against players in the same position. Pick one to compare."
-              : "The closest seasons by other players. Pick one to compare."}
+              ? "The closest seasons by other players, once every stat is measured against players in the same position. Pick one to compare, or open the head-to-head page."
+              : "The closest seasons by other players. Pick one to compare, or open the head-to-head page."}
           </p>
           <ol className="twins">
             {shown.map((tw, r) => (
@@ -408,6 +424,9 @@ function Body({
                     {tw.distance.toFixed(2)}
                   </span>
                 </button>
+                <a className="vslink" href={vsHref(slugs[s], slugs[tw.index], modelKey)} aria-label={`${label(data, s)} vs ${label(data, tw.index)}`}>
+                  vs
+                </a>
               </li>
             ))}
           </ol>
@@ -435,7 +454,9 @@ function Body({
             </div>
             <Search
               data={data}
-              onPick={pickTwin}
+              onPick={(i) => {
+                if (i !== s) window.location.assign(vsHref(slugs[s], slugs[i], modelKey));
+              }}
               compact
               id="compare"
               label="Compare with another season"
@@ -479,10 +500,4 @@ function Body({
       </section>
     </>
   );
-}
-
-function ordinal(n: number): string {
-  const v = n % 100;
-  const suffix = v >= 11 && v <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th";
-  return `${n.toLocaleString()}${suffix}`;
 }
