@@ -30,7 +30,11 @@ export function pairStats(d: Dataset, a: number, b: number): PairStats {
     const diff = d.z[a * d.m + c] - d.z[b * d.m + c];
     s += diff * diff;
   }
-  return { distance: Math.sqrt(s), rankAB: rankIn(d, a, b), rankBA: rankIn(d, b, a) };
+  // Prefer the exported distance when the pair is in a's stored twins, so /vs matches the twin list
+  // (the z-scores in the JSON are rounded, which can shift a recomputed distance by 0.01).
+  let distance = Math.sqrt(s);
+  for (let r = 0; r < d.k; r++) if (d.nn[a * d.k + r] === b) distance = d.nnd[a * d.k + r];
+  return { distance, rankAB: rankIn(d, a, b), rankBA: rankIn(d, b, a) };
 }
 
 /** The stats where two seasons sit closest together and the one where they differ most, in z units. */
