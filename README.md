@@ -1,6 +1,6 @@
 # Statistical Twin
 
-![Lamine Yamal 2025/26: the ten nearest twins, led by Lionel Messi 2019/20 at distance 1.30, and all 12,426 big-five seasons on the map.](docs/hero.png)
+![Lamine Yamal 2025/26: the ten nearest twins among 11,326 big-five seasons, led by Lionel Messi 2019/20 at distance 1.30, with what those twins did next and a side-by-side profile against Messi.](docs/hero.png)
 
 ## Try it
 
