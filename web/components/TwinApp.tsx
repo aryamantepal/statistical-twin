@@ -23,6 +23,7 @@ import {
 } from "@/lib/data";
 import { slugsFor } from "@/lib/slug";
 import DotPlot from "./DotPlot";
+import Hooks, { type HooksDoc, loadHooks } from "./Hooks";
 import MapView from "./MapView";
 import SchemePicker from "./SchemePicker";
 import Search from "./Search";
@@ -65,6 +66,7 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
   const [showAll, setShowAll] = useState(false);
   const [within, setWithin] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hooks, setHooks] = useState<HooksDoc | null>(null);
 
   // Load a model, then select the carried player-season (matched by name when ids differ).
   const open = useCallback((key: string, carry: Carry, legacyLink = false) => {
@@ -89,6 +91,7 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
 
   useEffect(() => {
     loadManifest().then(setManifest, (e) => setError(String(e)));
+    loadHooks().then(setHooks, () => {});
     if (initial) {
       open(initial.model, { id: initial.id, player: initial.player, season: initial.season });
       return;
@@ -199,6 +202,8 @@ export default function TwinApp({ initial }: { initial?: Initial }) {
             </div>
           )}
         </section>
+
+        {data && !initial && <Hooks data={data} section={hooks?.[data.info.key]} />}
 
         {missing && (
           <div className="notice" role="status">

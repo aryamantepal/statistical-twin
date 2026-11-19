@@ -6,6 +6,7 @@ import json
 
 import pandas as pd
 
+from twin import hooks
 from twin.config import MODELS, OUT_DIR, TOP_N
 
 
@@ -48,6 +49,7 @@ def main() -> None:
     s.add_argument("player")
     s.add_argument("season")
     s.add_argument("-k", type=int, default=10)
+    sub.add_parser("hooks", help="rewrite hooks.json from the exported model JSON")
     y = sub.add_parser("sync", help="back up / restore the Sofascore cache via Neon")
     y.add_argument("direction", choices=["push", "pull"])
     args = parser.parse_args()
@@ -78,6 +80,9 @@ def main() -> None:
                     }
                 )
         (OUT_DIR / "manifest.json").write_text(json.dumps(manifest, indent=1))
+        hooks.write()
+    elif args.cmd == "hooks":
+        hooks.write()
     else:
         show(args.model, args.player, args.season, args.k)
 
