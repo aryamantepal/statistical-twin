@@ -40,7 +40,9 @@ export function prerenderedSlugs(): string[] {
 // Yamal 25/26 vs Messi 15/16 is the reel's comparison (5th in Yamal's twin list).
 const FEATURED_PAIRS: [string, string][] = [["lamine-yamal-2025-26", "lionel-messi-2015-16"]];
 
-export function prerenderedPairs(top = 3): { a: string; b: string }[] {
+// Each season's nearest twin only: Vercel builds pages on one worker, and top-3 would add ~25k pages
+// (about 20 minutes) to every build. Other pairs render through the client fallback.
+export function prerenderedPairs(top = 1): { a: string; b: string }[] {
   const { data, slugs } = core();
   const subjects = new Set(prerenderedSlugs());
   const seen = new Set<string>();
