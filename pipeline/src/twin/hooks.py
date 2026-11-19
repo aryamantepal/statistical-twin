@@ -10,6 +10,9 @@ from twin.config import MODELS, OUT_DIR
 LEAD_SUBJECT = ("Lamine Yamal", "2025/26")
 LEAD_TWIN_PLAYER = "Lionel Messi"
 ISOLATED_COUNT = 6
+# Isolation is ranked among attackers only: defenders with almost no attacking output sit in
+# the sparse tail of these attacking metrics and would otherwise fill the list.
+ISOLATED_ROLE = "FW"
 
 
 def _ref(rows: dict, i: int) -> dict:
@@ -46,11 +49,15 @@ def lead(doc: dict) -> dict | None:
 
 
 def isolated(doc: dict, count: int = ISOLATED_COUNT) -> list[dict]:
-    """Seasons with the fewest other-player seasons within the radius (the export's `iso`).
-    Ties break on the larger typical distance, then row order."""
+    """Attacking seasons (position includes FW) with the fewest other-player seasons within the
+    radius (the export's `iso`). Ties break on the larger typical distance, then row order.
+    Rows without a position field all count."""
     rows = doc["rows"]
     iso, typical = np.asarray(rows["iso"]), np.asarray(rows["typical"])
-    order = np.lexsort((np.arange(len(iso)), -typical, iso))[:count]
+    order = np.lexsort((np.arange(len(iso)), -typical, iso))
+    if "pos" in rows:
+        order = [i for i in order if ISOLATED_ROLE in rows["pos"][i].split("/")]
+    order = order[:count]
     return [{**_ref(rows, int(i)), "isolation": int(iso[i])} for i in order]
 
 

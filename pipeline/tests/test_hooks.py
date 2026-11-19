@@ -52,3 +52,17 @@ def test_isolated_orders_by_fewest_neighbours_then_typical_distance():
     got = isolated(d, count=6)
     assert [h["row"] for h in got] == [3, 1, 6, 4, 0, 5]  # row 3 beats row 1 on typical distance
     assert [h["isolation"] for h in got] == [1, 1, 2, 3, 5, 7]
+
+
+def test_isolated_ranks_attackers_only():
+    doc = {
+        "rows": {
+            "player": ["A", "B", "C"],
+            "team": ["x", "x", "x"],
+            "season": ["2020/21"] * 3,
+            "iso": [1, 2, 3],
+            "typical": [5.0, 5.0, 5.0],
+            "pos": ["DF", "MF/FW", "FW"],
+        }
+    }
+    assert [e["player"] for e in isolated(doc, count=2)] == ["B", "C"]

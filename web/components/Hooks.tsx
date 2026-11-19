@@ -38,7 +38,7 @@ export default function Hooks({ data, section }: { data: Dataset; section: HookS
         </a>
       )}
       <div className="hook-iso">
-        <span className="ov">Most isolated seasons</span>
+        <span className="ov">Most isolated attacking seasons</span>
         <ol>
           {isolated.map((h) => (
             <li key={h.row}>

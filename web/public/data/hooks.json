@@ -3,57 +3,57 @@
   "radius": 3.5,
   "isolated": [
    {
-    "row": 7873,
+    "row": 7178,
     "player": "Neymar",
     "team": "Paris Saint Germain",
     "season": "2017/18",
     "isolation": 23
    },
    {
-    "row": 5989,
+    "row": 5459,
     "player": "Lionel Messi",
     "team": "Barcelona",
     "season": "2020/21",
-    "isolation": 47
+    "isolation": 45
    },
    {
-    "row": 5495,
+    "row": 5007,
     "player": "Lionel Messi",
     "team": "Barcelona",
     "season": "2018/19",
-    "isolation": 51
+    "isolation": 49
    },
    {
-    "row": 9026,
+    "row": 8226,
     "player": "Neymar",
     "team": "Paris Saint Germain",
     "season": "2022/23",
-    "isolation": 59
+    "isolation": 54
    },
    {
-    "row": 5418,
-    "player": "Neto",
-    "team": "Valencia",
-    "season": "2017/18",
-    "isolation": 64
+    "row": 5669,
+    "player": "Karim Benzema",
+    "team": "Real Madrid",
+    "season": "2021/22",
+    "isolation": 62
    },
    {
-    "row": 5750,
-    "player": "Lionel Messi",
-    "team": "Barcelona",
-    "season": "2019/20",
-    "isolation": 68
+    "row": 6964,
+    "player": "Edinson Cavani",
+    "team": "Paris Saint Germain",
+    "season": "2016/17",
+    "isolation": 62
    }
   ],
   "lead": {
    "subject": {
-    "row": 7171,
+    "row": 6538,
     "player": "Lamine Yamal",
     "team": "Barcelona",
     "season": "2025/26"
    },
    "twin": {
-    "row": 5750,
+    "row": 5241,
     "player": "Lionel Messi",
     "team": "Barcelona",
     "season": "2019/20"
@@ -66,62 +66,62 @@
   "radius": 3.5,
   "isolated": [
    {
-    "row": 8255,
+    "row": 7548,
     "player": "Neymar",
     "team": "Paris Saint Germain",
     "season": "2017/18",
-    "isolation": 24
+    "isolation": 23
    },
    {
-    "row": 5689,
-    "player": "Neto",
-    "team": "Valencia",
-    "season": "2017/18",
-    "isolation": 59
-   },
-   {
-    "row": 5768,
-    "player": "Lionel Messi",
-    "team": "Barcelona",
-    "season": "2018/19",
-    "isolation": 61
-   },
-   {
-    "row": 9442,
+    "row": 8629,
     "player": "Neymar",
     "team": "Paris Saint Germain",
     "season": "2022/23",
-    "isolation": 61
+    "isolation": 56
    },
    {
-    "row": 6277,
+    "row": 5275,
     "player": "Lionel Messi",
     "team": "Barcelona",
-    "season": "2020/21",
-    "isolation": 64
+    "season": "2018/19",
+    "isolation": 58
    },
    {
-    "row": 8949,
+    "row": 8179,
     "player": "Neymar",
     "team": "Paris Saint Germain",
     "season": "2020/21",
+    "isolation": 61
+   },
+   {
+    "row": 5741,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2020/21",
+    "isolation": 63
+   },
+   {
+    "row": 5514,
+    "player": "Lionel Messi",
+    "team": "Barcelona",
+    "season": "2019/20",
     "isolation": 64
    }
   ],
   "lead": {
    "subject": {
-    "row": 7530,
+    "row": 6886,
     "player": "Lamine Yamal",
     "team": "Barcelona",
     "season": "2025/26"
    },
    "twin": {
-    "row": 9438,
+    "row": 8625,
     "player": "Lionel Messi",
     "team": "Paris Saint Germain",
     "season": "2022/23"
    },
-   "distance": 1.28,
+   "distance": 1.31,
    "rank": 2
   }
  },
@@ -129,57 +129,57 @@
   "radius": 3.5,
   "isolated": [
    {
-    "row": 4870,
+    "row": 4446,
     "player": "Lionel Messi",
     "team": "Barcelona",
     "season": "2018/19",
-    "isolation": 177
+    "isolation": 173
    },
    {
-    "row": 4377,
+    "row": 3996,
     "player": "Neymar",
     "team": "Paris Saint Germain",
     "season": "2017/18",
-    "isolation": 220
+    "isolation": 218
    },
    {
-    "row": 6028,
+    "row": 5503,
     "player": "Lionel Messi",
     "team": "Barcelona",
     "season": "2019/20",
-    "isolation": 263
+    "isolation": 260
    },
    {
-    "row": 7103,
+    "row": 6477,
     "player": "Lionel Messi",
     "team": "Barcelona",
     "season": "2020/21",
-    "isolation": 276
+    "isolation": 275
    },
    {
-    "row": 6698,
-    "player": "Kylian Mbappe-Lottin",
-    "team": "Paris Saint Germain",
-    "season": "2019/20",
-    "isolation": 322
-   },
-   {
-    "row": 6463,
+    "row": 5898,
     "player": "Josip Ilicic",
     "team": "Atalanta",
     "season": "2019/20",
-    "isolation": 322
+    "isolation": 310
+   },
+   {
+    "row": 6112,
+    "player": "Kylian Mbappe-Lottin",
+    "team": "Paris Saint Germain",
+    "season": "2019/20",
+    "isolation": 326
    }
   ],
   "lead": {
    "subject": {
-    "row": 12737,
+    "row": 11616,
     "player": "Lamine Yamal",
     "team": "Barcelona",
     "season": "2025/26"
    },
    "twin": {
-    "row": 10068,
+    "row": 9182,
     "player": "Lionel Messi",
     "team": "Paris Saint Germain",
     "season": "2022/23"
@@ -192,46 +192,46 @@
   "radius": 3.5,
   "isolated": [
    {
-    "row": 14483,
+    "row": 13209,
     "player": "Lionel Messi",
     "team": "Barcelona",
     "season": "2018/19",
-    "isolation": 2031
+    "isolation": 2032
    },
    {
-    "row": 7725,
+    "row": 7084,
     "player": "Karim Benzema",
     "team": "Real Madrid",
     "season": "2021/22",
-    "isolation": 2141
+    "isolation": 2153
    },
    {
-    "row": 8737,
+    "row": 7986,
     "player": "Fabrizio Miccoli",
     "team": "Palermo",
     "season": "2011/12",
-    "isolation": 2180
+    "isolation": 2197
    },
    {
-    "row": 7257,
+    "row": 6642,
     "player": "Neymar",
     "team": "Paris S-G",
     "season": "2017/18",
     "isolation": 2630
    },
    {
-    "row": 4512,
+    "row": 4071,
     "player": "Kylian Mbappé",
     "team": "Paris S-G",
     "season": "2021/22",
-    "isolation": 2697
+    "isolation": 2707
    },
    {
-    "row": 14484,
+    "row": 13210,
     "player": "Lionel Messi",
     "team": "Barcelona",
     "season": "2019/20",
-    "isolation": 2723
+    "isolation": 2732
    }
   ]
  }
