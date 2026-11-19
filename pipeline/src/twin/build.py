@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+from twin import positions
 from twin.config import LEAGUES, MIN_MINUTES, UCL_FLOOR, Model
 from twin.match import link
 from twin.sources import fbref, sofascore, understat
@@ -74,6 +75,14 @@ def _add_ucl(df: pd.DataFrame, seasons) -> pd.DataFrame:
     return out
 
 
+def _drop_goalkeepers(df: pd.DataFrame, log: list[str]) -> pd.DataFrame:
+    """Goalkeepers' near-zero outfield stats distort percentiles, twins and isolation."""
+    gk = df["pos"] == positions.GK
+    if gk.any():
+        log.append(f"excluded {int(gk.sum())} goalkeeper seasons")
+    return df[~gk]
+
+
 def universe(model: Model, log: list[str]) -> pd.DataFrame:
     """Qualified player-seasons with every `<metric>_total` column the model needs."""
     if model.base == "fbref":
@@ -82,10 +91,13 @@ def universe(model: Model, log: list[str]) -> pd.DataFrame:
         fb = fb[fb["season"].isin(set(model.seasons) & _complete_seasons(fb, cols))]
         df = fb[fb["minutes"] >= MIN_MINUTES].copy()
         df["player_id"] = df["fbref_id"]
-        return df.reset_index(drop=True)
+        df["pos"] = df["pos"].map(positions.from_fbref)
+        return _drop_goalkeepers(df, log).reset_index(drop=True)
 
     us = understat.load(model.seasons)
     us = us[us["minutes"] >= (UCL_FLOOR if model.ucl else MIN_MINUTES)].reset_index(drop=True)
+    us["pos"] = us["position"].map(positions.from_understat)
+    us = _drop_goalkeepers(us, log).reset_index(drop=True)
     if not EXTRA & set(model.metrics):
         return us
 
