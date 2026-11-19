@@ -182,6 +182,20 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 .who p { color: var(--ink-2); margin-top: 8px; font-size: 15px; }
 .who i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--subject); margin-right: 8px; vertical-align: 1px; }
 
+/* what their twins did next */
+.next { margin-top: 16px; }
+.next-list { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.next-who { display: flex; gap: 10px; align-items: baseline; padding-bottom: 8px; border-bottom: 1px solid var(--rule); }
+.next-who .rank { color: var(--ink-3); font-size: 13px; font-variant-numeric: tabular-nums; }
+.next-who .name { min-width: 0; font-size: 15.5px; }
+.next-who .name small { display: block; color: var(--ink-3); font-size: 12.5px; }
+.next-list ul { list-style: none; }
+.next-list ul li { padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.next-list .ov { display: block; color: var(--ink-3); font-size: 12px; }
+.next-list em { color: var(--ink-3); font-style: normal; }
+.next-list .none { color: var(--ink-3); }
+@media (max-width: 900px) { .next-list { grid-template-columns: 1fr; } }
+
 /* cards */
 .grid2 { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 16px; margin-top: 16px; }
 .card { background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r-card); padding: 24px; min-width: 0; }
@@ -228,6 +242,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 
 .viz { position: relative; }
 .viz canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
+.career-toggle { display: inline-flex; gap: 6px; align-items: center; margin-top: 8px; font-size: 13px; color: var(--text); cursor: pointer; }
 .tooltip {
   position: absolute; pointer-events: none; z-index: 10; background: var(--paper); color: var(--ink);
   border-radius: 6px; padding: 7px 10px; font-size: 12.5px; white-space: nowrap; transform: translate(12px, -50%);
@@ -327,3 +342,21 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
   .facts.three { grid-template-columns: 1fr; }
   .facts.three .fact .ov { min-height: 0; }
 }
+
+/* player blender */
+.blend-picks { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; margin-bottom: 20px; }
+.blend-pick { margin-top: 8px; font-size: 15px; color: var(--ink-2); min-height: 1.4em; }
+.blend-slider { display: block; margin-top: 14px; font-size: 14px; color: var(--ink-2); }
+.blend-slider span { display: flex; justify-content: space-between; gap: 12px; }
+.blend-slider b { font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+.blend-slider input { width: 100%; margin-top: 6px; accent-color: var(--subject); }
+.blend-nudges { margin-top: 20px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.blend-nudges summary { cursor: pointer; font-size: 15px; color: var(--ink); }
+.blend-nudges .sub { margin-bottom: 4px; }
+.blend-nudges .cta { margin-top: 16px; }
+.twins .blend-hit {
+  display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: center; width: 100%;
+  padding: 10px 8px; text-decoration: none; color: inherit; text-align: left;
+}
+.twins .blend-hit:hover { background: color-mix(in oklab, var(--ink) 4%, transparent); }
+@media (max-width: 560px) { .blend-picks { grid-template-columns: 1fr; } }

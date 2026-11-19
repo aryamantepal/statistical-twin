@@ -273,3 +273,32 @@ export function shortSeason(season: string): string {
 export function label(d: Dataset, i: number): string {
   return `${d.player[i]} ${d.season[i]}`;
 }
+
+export type NextSeason = {
+  season: string;
+  /** Row of the player's season t+offset (most minutes if split across clubs), or null. */
+  row: number | null;
+  /** Distance from the subject season in z space, when there is a row. */
+  distance: number | null;
+  /** True when the season is after the model's newest one, so it can't exist yet. */
+  future: boolean;
+};
+
+function offsetSeason(season: string, by: number): string {
+  const start = Number(season.slice(0, 4)) + by;
+  return `${start}/${String(start + 1).slice(2)}`;
+}
+
+/** The same player's seasons t+1 and t+2 after row j, with distance from the subject (`dist`). */
+export function followingSeasons(d: Dataset, j: number, dist: Float32Array): NextSeason[] {
+  let newest = "";
+  for (const s of d.season) if (s > newest) newest = s;
+  return [1, 2].map((by) => {
+    const season = offsetSeason(d.season[j], by);
+    let row: number | null = null;
+    for (let i = 0; i < d.n; i++) {
+      if (d.id[i] === d.id[j] && d.season[i] === season && (row === null || d.minutes[i] > d.minutes[row])) row = i;
+    }
+    return { season, row, distance: row === null ? null : dist[row], future: season > newest };
+  });
+}

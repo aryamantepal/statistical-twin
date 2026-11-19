@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { type Dataset, label } from "@/lib/data";
+import { type Dataset, label, shortSeason } from "@/lib/data";
 import { cssVar, useCanvas, useSchemeKey } from "./useCanvas";
 
 type Props = {
@@ -24,6 +24,7 @@ export default function MapView({ data, subject, twin, mode, dist, topTwins, onP
   const scheme = useSchemeKey();
   const pos = useRef<{ x: Float32Array; y: Float32Array; visible: Uint8Array } | null>(null);
   const [hover, setHover] = useState<{ i: number; x: number; y: number } | null>(null);
+  const [career, setCareer] = useState(false);
 
   const top = useMemo(() => new Set(topTwins), [topTwins]);
   const bounds = useMemo(() => {
@@ -34,6 +35,12 @@ export default function MapView({ data, subject, twin, mode, dist, topTwins, onP
     }
     return { x0, x1, y0, y1 };
   }, [data]);
+  // The subject player's seasons in order, for the career line.
+  const path = useMemo(() => {
+    const rows: number[] = [];
+    for (let i = 0; i < data.n; i++) if (data.id[i] === data.id[subject]) rows.push(i);
+    return rows.sort((a, b) => data.season[a].localeCompare(data.season[b]));
+  }, [data, subject]);
   const maxMin = useMemo(() => data.minutes.reduce((a, b) => Math.max(a, b), 0), [data]);
 
   const draw = useCallback(
@@ -95,6 +102,23 @@ export default function MapView({ data, subject, twin, mode, dist, topTwins, onP
           ctx.beginPath();
           ctx.arc(px[i], py[i], size(i) + 1.5, 0, Math.PI * 2);
           ctx.fill();
+        }
+        if (career && path.length > 1) {
+          tint(subjectColor, 0.7);
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          path.forEach((i, n) => (n ? ctx.lineTo(px[i], py[i]) : ctx.moveTo(px[i], py[i])));
+          ctx.stroke();
+          for (const i of path) {
+            if (i === subject) continue;
+            tint(subjectColor, 0.9);
+            ctx.beginPath();
+            ctx.arc(px[i], py[i], 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            tint(ink, 0.6);
+            ctx.textAlign = "left";
+            ctx.fillText(shortSeason(data.season[i]), px[i] + 6, py[i] - 5);
+          }
         }
         ctx.globalAlpha = 1;
       } else {
@@ -158,7 +182,7 @@ export default function MapView({ data, subject, twin, mode, dist, topTwins, onP
       mark(subject, subjectColor, 7);
       pos.current = { x: px, y: py, visible };
     },
-    [data, subject, twin, mode, dist, top, bounds, maxMin, scheme],
+    [data, subject, twin, mode, dist, top, bounds, maxMin, scheme, career, path],
   );
 
   const { ref: canvasRef } = useCanvas((w) => (mode === "map" ? Math.min(560, Math.max(320, w * 0.62)) : Math.min(620, w)), draw);
@@ -195,6 +219,12 @@ export default function MapView({ data, subject, twin, mode, dist, topTwins, onP
           if (hit) onPick(hit.i);
         }}
       />
+      {mode === "map" && path.length > 1 && (
+        <label className="career-toggle">
+          <input type="checkbox" checked={career} onChange={(e) => setCareer(e.target.checked)} />
+          Show {data.player[subject]}’s career path ({path.length} seasons)
+        </label>
+      )}
       {hover && (
         <div className="tooltip" style={{ left: hover.x, top: hover.y }}>
           <strong>{label(data, hover.i)}</strong>
