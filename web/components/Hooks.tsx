@@ -1,5 +1,6 @@
 import { type Dataset, basePath, label, shortSeason } from "@/lib/data";
 import { slugsFor } from "@/lib/slug";
+import { vsHref } from "@/lib/vs";
 
 export type HookRef = { row: number; player: string; team: string; season: string };
 export type HookSection = {
@@ -27,7 +28,7 @@ export default function Hooks({ data, section }: { data: Dataset; section: HookS
   return (
     <section className="hooks" aria-label="Highlights">
       {lead && (
-        <a className="hook-lead" href={href(data, lead.subject.row)}>
+        <a className="hook-lead" href={vsHref(slugsFor(data)[lead.subject.row], slugsFor(data)[lead.twin.row], data.info.key)}>
           <span className="ov">Headline twin</span>
           <b>
             {label(data, lead.subject.row)} <span aria-hidden>↔</span> {lead.twin.player} {shortSeason(lead.twin.season)}
