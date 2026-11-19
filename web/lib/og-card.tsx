@@ -219,3 +219,41 @@ export function homeCard(): ImageResponse {
     { ...OG_SIZE, fonts: loadFonts() },
   );
 }
+
+/** One shared card for every /vs page: a per-pair image would add ~100k renders to the build. */
+export function vsCard(): ImageResponse {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          width: "100%",
+          height: "100%",
+          background: C.bg,
+          color: C.ink,
+          padding: "64px 72px",
+          fontFamily: serif,
+        }}
+      >
+        <Overline>Statistical twin · head to head</Overline>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ width: 40, height: 40, borderRadius: 40, background: C.subject }} />
+            <div style={{ display: "flex", fontFamily: sans, fontSize: 40, color: C.ink3, margin: "0 28px" }}>vs</div>
+            <div style={{ width: 40, height: 40, borderRadius: 40, background: C.twin }} />
+          </div>
+          <div style={{ display: "flex", fontSize: 88, fontWeight: 600, lineHeight: 1.04, marginTop: 36 }}>
+            Two seasons, thirteen stats.
+          </div>
+          <div style={{ display: "flex", fontFamily: sans, fontSize: 30, color: C.ink2, marginTop: 24, maxWidth: 940 }}>
+            How close are they, and where does each rank among the other’s twins?
+          </div>
+        </div>
+        <div style={{ display: "flex", fontFamily: sans, fontSize: 22, color: C.ink3 }}>Statistical Twin</div>
+      </div>
+    ),
+    { ...OG_SIZE, fonts: loadFonts() },
+  );
+}

@@ -30,3 +30,40 @@ export function prerenderedSlugs(): string[] {
   const order = Array.from({ length: data.n }, (_, i) => i).sort((a, b) => data.minutes[b] - data.minutes[a]);
   return order.slice(0, limit).map((i) => slugs[i]);
 }
+
+/**
+ * Canonical /vs pairs to prerender: each season's top-10 twins, deduped so A/B and B/A are one page
+ * (the alphabetically smaller slug first, matching `vsPath`). Every other pair is served by the
+ * client-side fallback on /vs.
+ */
+// Pairs prerendered regardless of rank, so their links unfurl with a per-pair title.
+// Yamal 25/26 vs Messi 15/16 is the reel's comparison (5th in Yamal's twin list).
+const FEATURED_PAIRS: [string, string][] = [["lamine-yamal-2025-26", "lionel-messi-2015-16"]];
+
+// Each season's nearest twin only: Vercel builds pages on one worker, and top-3 would add ~25k pages
+// (about 20 minutes) to every build. Other pairs render through the client fallback.
+export function prerenderedPairs(top = 1): { a: string; b: string }[] {
+  const { data, slugs } = core();
+  const subjects = new Set(prerenderedSlugs());
+  const seen = new Set<string>();
+  const out: { a: string; b: string }[] = [];
+  for (let i = 0; i < data.n; i++) {
+    if (!subjects.has(slugs[i])) continue;
+    for (let r = 0; r < top; r++) {
+      const j = data.nn[i * data.k + r];
+      const [a, b] = slugs[i] <= slugs[j] ? [slugs[i], slugs[j]] : [slugs[j], slugs[i]];
+      const key = `${a}/${b}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ a, b });
+    }
+  }
+  const known = new Set(slugs);
+  for (const pair of FEATURED_PAIRS) {
+    const [a, b] = [...pair].sort();
+    if (!known.has(a) || !known.has(b) || seen.has(`${a}/${b}`)) continue;
+    seen.add(`${a}/${b}`);
+    out.push({ a, b });
+  }
+  return out;
+}
